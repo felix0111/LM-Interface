@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "LMInterface (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "LMInterface (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

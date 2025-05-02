@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="LMInterface.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="LMInterface">
+
+    <NavigationView
+        Name="NavigationView"
+        PaneDisplayMode="Left"
+        IsPaneOpen="True"
+        OpenPaneLength="200"
+        CompactPaneLength="50"
+        Header=""
+        IsBackEnabled="False"
+        IsBackButtonVisible="Collapsed"
+        SelectionChanged="NavigationView_OnSelectionChanged">
+
+        <!-- The items in the left menu -->
+        <NavigationView.MenuItems>
+            <NavigationViewItem Name="HomeMenuEntry"  Content="Home" Icon="Home" Tag="home"/>
+            <NavigationViewItem Content="Conversation" Icon="Message" Tag="conversation"/>
+        </NavigationView.MenuItems>
+
+        <!-- The main content area -->
+        <Frame x:Name="ContentFrame" />
+
+    </NavigationView>
+</Window>

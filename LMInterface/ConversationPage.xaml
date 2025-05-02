@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="LMInterface.ConversationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:LMInterface"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Background="#0a0a0a"
+          Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />    <!-- ListView -->
+            <RowDefinition Height="Auto" /> <!-- Input Field -->
+        </Grid.RowDefinitions>
+
+        <!-- Messages -->
+        <ListView x:Name="MessagesList"
+                  ItemsSource="{x:Bind Conversation, Mode=OneWay}"
+                  Padding="10"
+                  BorderThickness="0"
+                  SelectionMode="None"
+                  Grid.Row="0">
+
+            <!-- Template message -->
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:Message">
+                    <Border 
+                        Background="#0a0a0a" 
+                        CornerRadius="10" 
+                        HorizontalAlignment="{x:Bind MessageAlignment}"
+                        Margin="{x:Bind MessageMargin}">
+                        
+                        <controls:MarkdownTextBlock Padding="10"
+                                                    TextWrapping="Wrap"
+                                                    FontFamily="Segoe UI Emoji"
+                                                    DataContextChanged="MessageTextBox_ContextChanged"
+                                                    WrapCodeBlock="True"
+                                                    UseSyntaxHighlighting="True"
+                                                    CodeBackground="#1a1a1a"/>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- User Input Panel Placeholder -->
+        <Border Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+
+            <!-- User Input Panel -->
+            <StackPanel Orientation="Vertical"
+                        Padding="15"
+                        Spacing="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        CornerRadius="20"
+                        Background="#2a2a2a">
+
+                <TextBox MinWidth="400"
+                         Width="Auto"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         IsSpellCheckEnabled="False"
+                         PlaceholderText="Type a message..."
+                         Background="#2a2a2a"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         CornerRadius="15"
+                         Padding="10"
+                         BorderThickness="1"
+                         PreviewKeyDown="SendMessage_InputBox" />
+
+                <!-- Button Panel -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="5"
+                            HorizontalAlignment="Right">
+
+                    <ToggleButton x:Name="ThinkButton"
+                                  CornerRadius="10">
+                        <TextBlock Text="Encourage Thinking"/>
+                    </ToggleButton>
+                    <ToggleButton x:Name="WebButton"
+                                  CornerRadius="10">
+                        <TextBlock Text="Enable Web-Search"/>
+                    </ToggleButton>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+        
+
+    </Grid>
+</Page>
