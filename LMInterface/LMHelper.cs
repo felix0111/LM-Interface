@@ -7,52 +7,46 @@ using Newtonsoft.Json;
 namespace LMInterface
 {
     public static class LMHelper {
+        /// <summary>
+        /// Returns the string without the specified tag.
+        /// </summary>
+        public static string RemoveTag(this string s, string tagName, out string removedSection) {
+            string startTag = $"<{tagName}>";
+            string endTag = $"</{tagName}>";
 
-        public static string FormatRawText(Message msg) {
 
-            //if lm uses tool
-            if (msg.ToolCalls != null) {
-                return $"*Used tool {msg.ToolCalls[0].Function.Name} with parameters {msg.ToolCalls[0].Function.Arguments}*";
+            if (s.StartsWith(startTag)) {
+                int indexStart = s.IndexOf(startTag, StringComparison.CurrentCulture);
+                int indexEnd = s.IndexOf(endTag, StringComparison.CurrentCulture);
+
+                removedSection = s.Substring(indexStart + startTag.Length, indexEnd - (indexStart + startTag.Length));
+
+                return s.Substring(indexEnd + endTag.Length);
             }
 
-            //replace all \r with \n
-            string rawText = msg.Content;
-            string formattedMessage = "";
-
-            //process <think></think> paragraph
-            int indexStart = 0;
-            int indexEnd = 0;
-
-            //process think section at start
-            if (rawText.StartsWith($"<think>{new string('\n', 2)}</think>")) {
-                formattedMessage = rawText.Substring(17);
-            } else if (rawText.StartsWith("<think>")) {
-                indexStart = rawText.IndexOf("<think>", StringComparison.CurrentCulture);
-                indexEnd = rawText.IndexOf("</think>", StringComparison.CurrentCulture);
-
-                string thinkContent = rawText.Substring(indexStart + 7, indexEnd - (indexStart + 7));
-                formattedMessage = $"```{thinkContent}```  \n{rawText.Substring(indexEnd + 8)}";
-            } else {
-                formattedMessage = rawText;
-            }
-
-            return formattedMessage;
+            removedSection = "";
+            return s;
         }
 
-        public static Message RemoveThinkSection(Message message) {
-            Message newMessage = message.Clone();
+        /// <summary>
+        /// Returns the content of the specified tag in a string.
+        /// </summary>
+        public static string GetTag(this string s, string tagName) {
+            string startTag = $"<{tagName}>";
+            string endTag = $"</{tagName}>";
 
-            //remove think section at start
-            if (message.Role == "assistant" && newMessage.Content.StartsWith("<think>")) {
-                int indexEnd = newMessage.Content.IndexOf("</think>", StringComparison.CurrentCulture);
-                newMessage.Content = newMessage.Content.Substring(indexEnd + 8).TrimStart('\n');
+            if (s.StartsWith(startTag)) {
+                int indexStart = s.IndexOf(startTag, StringComparison.CurrentCulture);
+                int indexEnd = s.IndexOf(endTag, StringComparison.CurrentCulture);
+
+                return s.Substring(indexStart + startTag.Length, indexEnd - (indexStart + startTag.Length));
             }
 
-            return newMessage;
+            return "";
         }
 
         public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think) {
-            var convo = conversation.Select(RemoveThinkSection).ToList();
+            var convo = conversation.Select(o => o.WithoutThinkSection()).ToList();
             if (!think) convo[^1].Content += " /no_think";
 
             return new() {

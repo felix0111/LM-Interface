@@ -59,19 +59,13 @@ namespace LMInterface
             }
         }
 
-        /// <summary>
-        /// Executed when DataContext of message textblock is set.
-        /// </summary>
-        private void MessageTextBox_ContextChanged(object sender, DataContextChangedEventArgs e) {
-            var rtb = sender as MarkdownTextBlock;
-
-            if (rtb.DataContext == null) return;
-            rtb.Text = LMHelper.FormatRawText((Message)rtb.DataContext);
-
-            //scroll to last message if not manually scrolled up
-            Border? border = VisualTreeHelper.GetChild(MessagesList, 0) as Border;
-            ScrollViewer? scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-            if (scrollViewer?.VerticalOffset < scrollViewer?.ScrollableHeight - 100) return;
+        private void ScrollToLastMessage(bool force) {
+            //if not forced, it may return when user manually scrolled up by some amount
+            if (!force) {
+                Border? border = VisualTreeHelper.GetChild(MessagesList, 0) as Border;
+                ScrollViewer? scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
+                if (scrollViewer?.VerticalOffset < scrollViewer?.ScrollableHeight - 100) return;
+            }
 
             //scroll down to last message 
             var lastItem = MessagesList.Items[^1];
@@ -87,8 +81,13 @@ namespace LMInterface
             Conversation[0] = new Message() { Role = "system", Content = SystemPromptTextBox.Text };
             SettingsPopup.IsOpen = false;
         }
+
+        
     }
 
+    /// <summary>
+    /// Holds all properties and functions used for UI.
+    /// </summary>
     public partial class Message {
         public HorizontalAlignment MessageAlignment {
             get {
@@ -104,6 +103,17 @@ namespace LMInterface
             }
         }
 
-        
+        public Visibility ThoughtsVisible => Thoughts != "" ? Visibility.Visible : Visibility.Collapsed;
+
+        public string Thoughts => Content.GetTag("think");
+
+        public string MainContent => Content.RemoveTag("think", out _);
+
+        public Message WithoutThinkSection() {
+            Message clone = Clone();
+            clone.Content = clone.Content.RemoveTag("think", out _);
+
+            return clone;
+        }
     }
 }

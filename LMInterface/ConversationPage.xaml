@@ -34,13 +34,28 @@
                         HorizontalAlignment="{x:Bind MessageAlignment}"
                         Margin="{x:Bind MessageMargin}">
                         
-                        <controls:MarkdownTextBlock Padding="10"
-                                                    TextWrapping="Wrap"
-                                                    FontFamily="Segoe UI Emoji"
-                                                    DataContextChanged="MessageTextBox_ContextChanged"
-                                                    WrapCodeBlock="True"
-                                                    UseSyntaxHighlighting="True"
-                                                    CodeBackground="#1a1a1a"/>
+                        <StackPanel Orientation="Vertical">
+
+                            <!-- Thinking Content -->
+                            <Expander Header="Thoughts" Visibility="{x:Bind ThoughtsVisible}">
+                                <controls:MarkdownTextBlock Padding="10"
+                                                            TextWrapping="Wrap"
+                                                            FontFamily="Segoe UI Emoji"
+                                                            Text="{x:Bind Thoughts}"
+                                                            WrapCodeBlock="True"
+                                                            UseSyntaxHighlighting="True"
+                                                            CodeBackground="#1a1a1a" />
+                            </Expander>
+
+                            <!-- Main Text Content -->
+                            <controls:MarkdownTextBlock Padding="10"
+                                                        TextWrapping="Wrap"
+                                                        FontFamily="Segoe UI Emoji"
+                                                        Text="{x:Bind MainContent}"
+                                                        WrapCodeBlock="True"
+                                                        UseSyntaxHighlighting="True"
+                                                        CodeBackground="#1a1a1a" />
+                        </StackPanel>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
