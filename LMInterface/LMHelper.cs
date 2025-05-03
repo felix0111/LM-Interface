@@ -43,7 +43,7 @@ namespace LMInterface
             Message newMessage = message.Clone();
 
             //remove think section at start
-            if (newMessage.Content.StartsWith("<think>")) {
+            if (message.Role == "assistant" && newMessage.Content.StartsWith("<think>")) {
                 int indexEnd = newMessage.Content.IndexOf("</think>", StringComparison.CurrentCulture);
                 newMessage.Content = newMessage.Content.Substring(indexEnd + 8).TrimStart('\n');
             }
