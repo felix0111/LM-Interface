@@ -46,6 +46,17 @@
             </ListView.ItemTemplate>
         </ListView>
 
+        <!-- Overlap on messages -->
+        <Popup Grid.Row="0" x:Name="SettingsPopup" IsLightDismissEnabled="True">
+            <Border Background="#1a1a1a" BorderBrush="#2a2a2a" BorderThickness="1" Padding="10">
+                <StackPanel>
+                    <TextBlock Text="Enter system prompt:" Margin="0,0,0,5" />
+                    <TextBox x:Name="SystemPromptTextBox" MinWidth="300" AcceptsReturn ="True" IsSpellCheckEnabled="False" Margin="0,0,0,5" />
+                    <Button Content="Submit" Click="SubmitButton_Click" />
+                </StackPanel>
+            </Border>
+        </Popup>
+
         <!-- User Input Panel Placeholder -->
         <Border Grid.Row="1"
                 HorizontalAlignment="Stretch"
@@ -79,14 +90,15 @@
                             Spacing="5"
                             HorizontalAlignment="Right">
 
-                    <ToggleButton x:Name="ThinkButton"
-                                  CornerRadius="10">
+                    <ToggleButton x:Name="ThinkButton" CornerRadius="10">
                         <TextBlock Text="Encourage Thinking"/>
                     </ToggleButton>
-                    <ToggleButton x:Name="WebButton"
-                                  CornerRadius="10">
+                    <ToggleButton x:Name="WebButton" CornerRadius="10">
                         <TextBlock Text="Enable Web-Search"/>
                     </ToggleButton>
+                    <Button CornerRadius="10" ClickMode="Release" Click="SettingsButton_Click">
+                        <SymbolIcon Symbol="Setting"></SymbolIcon>
+                    </Button>
                 </StackPanel>
 
             </StackPanel>

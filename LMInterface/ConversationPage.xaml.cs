@@ -16,7 +16,7 @@ namespace LMInterface
 {
     public sealed partial class ConversationPage : Page {
 
-        public ObservableCollection<Message> Conversation = new();
+        public ObservableCollection<Message> Conversation = new() {new Message() {Role = "system", Content = ""}};
         
         public ConversationPage()
         {
@@ -78,10 +78,32 @@ namespace LMInterface
             MessagesList.UpdateLayout();
             MessagesList.ScrollIntoView(lastItem);
         }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e) {
+            SettingsPopup.IsOpen = true;
+        }
+
+        private void SubmitButton_Click(object sender, RoutedEventArgs e) {
+            Conversation[0] = new Message() { Role = "system", Content = SystemPromptTextBox.Text };
+            SettingsPopup.IsOpen = false;
+        }
     }
 
     public partial class Message {
-        public HorizontalAlignment MessageAlignment => Role == "assistant" ? HorizontalAlignment.Left : HorizontalAlignment.Right;
-        public Thickness MessageMargin => Role == "assistant" ? new Thickness(0, 20, 50, 20) : new Thickness(50, 20, 0, 20);
+        public HorizontalAlignment MessageAlignment {
+            get {
+                if (Role == "system") return HorizontalAlignment.Center;
+                return Role == "assistant" ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+            }
+        }
+
+        public Thickness MessageMargin {
+            get {
+                if (Role == "system") return new Thickness(0, 20, 20, 0);
+                return Role == "assistant" ? new Thickness(0, 20, 50, 20) : new Thickness(50, 20, 0, 20);
+            }
+        }
+
+        
     }
 }
