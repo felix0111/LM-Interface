@@ -1,76 +1,76 @@
-using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
-using CommunityToolkit.WinUI.UI.Controls;
+using CommunityToolkit.WinUI.UI;
 using Microsoft.UI.Input;
-using Newtonsoft.Json;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace LMInterface
 {
     public sealed partial class ConversationPage : Page {
 
         public ObservableCollection<Message> Conversation = new() {new Message() {Role = "system", Content = ""}};
-        
-        public ConversationPage()
-        {
+
+        public ConversationPage() {
             this.InitializeComponent();
         }
 
-        public void ProcessUserMessage(TextBox textBlock) {
-            string rawText = textBlock.Text.Replace("\r", "  \n");
+        //should probably be executed in the UI thread
+        public void AddMessageToConversation(Message message) {
 
-            //add user message to conversation history and clear input box
-            Conversation.Add(new () {Role = "user", Content = rawText, Think = ThinkButton.IsChecked!.Value});
-            textBlock.Text = "";
+            //determine if the listview gets automatically scrolled down
+            Border? border = VisualTreeHelper.GetChild(MessagesList, 0) as Border;
+            ScrollViewer? scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
+            bool scroll = scrollViewer?.VerticalOffset > scrollViewer?.ScrollableHeight - 100;
 
-            //send message to language model (async)
-            var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            Task task = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked.Value, response => {
-                //add message in UI thread!
-                dis.TryEnqueue(() => { Conversation.Add(response.Choices[0].Message); });
-            });
+            Conversation.Add(message);
+
+            if(scroll) ScrollToLastMessage();
         }
 
         /// <summary>
-        /// Checks when user presses Enter on TextBlock.
+        /// Executed when user presses Enter on TextBlock.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="keyRoutedEventArgs"></param>
-        public void SendMessage_InputBox(object sender, KeyRoutedEventArgs keyRoutedEventArgs) {
-            if (keyRoutedEventArgs.Key == VirtualKey.Enter) {
-                if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) {
-                    keyRoutedEventArgs.Handled = false;
-                    return;
-                }
+        private void SendMessage_InputBox(object sender, KeyRoutedEventArgs keyRoutedEventArgs) {
+            //if not enter
+            if (keyRoutedEventArgs.Key != VirtualKey.Enter) return;
 
-                // Block the Enter key from creating a new line
-                keyRoutedEventArgs.Handled = true;
-
-                var textBlock = (TextBox)sender;
-                if (textBlock.Text.Trim() == String.Empty) return;
-                ProcessUserMessage(textBlock);
+            //if shift pressed, then dont send
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) {
+                keyRoutedEventArgs.Handled = false;
+                return;
             }
+
+            // Block the Enter key from creating a new line
+            keyRoutedEventArgs.Handled = true;
+
+            //pre-format raw text and clear textbox
+            var textBox = (TextBox)sender;
+            var rawText = textBox.Text.Replace('\r', '\n').Trim();
+            textBox.Text = "";
+
+            //if empty then return
+            if (rawText == "") return;
+
+            //show message on page
+            AddMessageToConversation(new() { Role = "user", Content = rawText, Think = ThinkButton.IsChecked!.Value });
+
+            //send message to language model (async)
+            var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked.Value, response => {
+                //add response to conversation in UI thread!!!
+                dis.TryEnqueue(() => AddMessageToConversation(response.Choices[0].Message));
+            });
         }
 
-        private void ScrollToLastMessage(bool force) {
-            //if not forced, it may return when user manually scrolled up by some amount
-            if (!force) {
-                Border? border = VisualTreeHelper.GetChild(MessagesList, 0) as Border;
-                ScrollViewer? scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-                if (scrollViewer?.VerticalOffset < scrollViewer?.ScrollableHeight - 100) return;
-            }
-
-            //scroll down to last message 
-            var lastItem = MessagesList.Items[^1];
+        private void ScrollToLastMessage() {
             MessagesList.UpdateLayout();
-            MessagesList.ScrollIntoView(lastItem);
+            MessagesList.SmoothScrollIntoViewWithIndexAsync(MessagesList.Items.Count-1, ScrollItemPlacement.Top, false, false);
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e) {
@@ -82,7 +82,29 @@ namespace LMInterface
             SettingsPopup.IsOpen = false;
         }
 
-        
+        //changes some expander properties that are not directly accessible in xaml
+        private void ThoughtsExpander_Loaded(object sender, RoutedEventArgs e) {
+            var expander = (Expander)sender;
+            expander.ApplyTemplate();
+
+            var expanderGrid = VisualTreeHelper.GetChild(expander, 0) as Grid;
+            var toggle = VisualTreeHelper.GetChild(expanderGrid, 0) as ToggleButton;
+
+            //change header color
+            UIExtensions.StringToColor("#2a2a2a", out Windows.UI.Color c);
+            toggle.Background = new SolidColorBrush(c);
+            toggle.BorderThickness = new Thickness(0);
+
+            //disable border
+            var contentBorderClip = VisualTreeHelper.GetChild(expanderGrid, 1) as Border;
+            var contentBorder = VisualTreeHelper.GetChild(contentBorderClip, 0) as Border;
+            contentBorder.BorderThickness = new Thickness(0);
+
+            //scroll when expander enlarges
+            expander.SizeChanged += (o, args) => {
+                if(expander.IsExpanded) MessagesList.SmoothScrollIntoViewWithItemAsync(expander.DataContext);
+            };
+        }
     }
 
     /// <summary>
@@ -98,16 +120,18 @@ namespace LMInterface
 
         public Thickness MessageMargin {
             get {
-                if (Role == "system") return new Thickness(0, 20, 20, 0);
-                return Role == "assistant" ? new Thickness(0, 20, 50, 20) : new Thickness(50, 20, 0, 20);
+                if (Role == "system") return new Thickness(60, 15, 60, 15);
+                return Role == "assistant" ? new Thickness(0, 15, 50, 15) : new Thickness(50, 20, 0, 20);
             }
         }
 
-        public Visibility ThoughtsVisible => Thoughts != "" ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility ThoughtsVisible => Thoughts.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
 
-        public string Thoughts => Content.GetTag("think");
+        public Visibility MainContentVisible => MainContent.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
 
-        public string MainContent => Content.RemoveTag("think", out _);
+        public string Thoughts => Content == null ? "" : Content.GetTag("think");
+
+        public string MainContent => Content == null ? "" : Content.RemoveTag("think", out _);
 
         public Message WithoutThinkSection() {
             Message clone = Clone();

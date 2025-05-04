@@ -10,8 +10,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Background="#0a0a0a"
-          Padding="20">
+    <Grid Background="#0a0a0a">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />    <!-- ListView -->
             <RowDefinition Height="Auto" /> <!-- Input Field -->
@@ -20,7 +19,7 @@
         <!-- Messages -->
         <ListView x:Name="MessagesList"
                   ItemsSource="{x:Bind Conversation, Mode=OneWay}"
-                  Padding="10"
+                  Padding="40"
                   BorderThickness="0"
                   SelectionMode="None"
                   Grid.Row="0">
@@ -28,45 +27,62 @@
             <!-- Template message -->
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:Message">
-                    <Border 
-                        Background="#0a0a0a" 
-                        CornerRadius="10" 
-                        HorizontalAlignment="{x:Bind MessageAlignment}"
-                        Margin="{x:Bind MessageMargin}">
-                        
+                    <Border Margin="{x:Bind MessageMargin}" 
+                            Background="#1a1a1a" 
+                            CornerRadius="10" 
+                            HorizontalAlignment="{x:Bind MessageAlignment}">
+                        <!-- Message consists of thinking section and main content section -->
                         <StackPanel Orientation="Vertical">
-
                             <!-- Thinking Content -->
-                            <Expander Header="Thoughts" Visibility="{x:Bind ThoughtsVisible}">
-                                <controls:MarkdownTextBlock Padding="10"
-                                                            TextWrapping="Wrap"
-                                                            FontFamily="Segoe UI Emoji"
-                                                            Text="{x:Bind Thoughts}"
-                                                            WrapCodeBlock="True"
-                                                            UseSyntaxHighlighting="True"
-                                                            CodeBackground="#1a1a1a" />
+                            <Expander Visibility="{x:Bind ThoughtsVisible}"
+                                      MinHeight="0"
+                                      MinWidth="0"
+                                      HorizontalAlignment="Left"
+                                      HorizontalContentAlignment="Stretch"
+                                      Margin="15"
+                                      Padding="0"
+                                      Header="Show Toughts"
+                                      CornerRadius="5"
+                                      Loaded="ThoughtsExpander_Loaded">
+                                <Expander.Content>
+                                    <controls:MarkdownTextBlock Padding="15"
+                                                                TextWrapping="Wrap"
+                                                                FontFamily="Consolas"
+                                                                Text="{x:Bind Thoughts}"
+                                                                Background="#0a0a0a"
+                                                                CodeBackground="#0a0a0a"
+                                                                WrapCodeBlock="True"
+                                                                UseSyntaxHighlighting="True"/>
+                                </Expander.Content>
                             </Expander>
 
                             <!-- Main Text Content -->
-                            <controls:MarkdownTextBlock Padding="10"
+                            <controls:MarkdownTextBlock Visibility="{x:Bind MainContentVisible}"
+                                                        Margin="20, 10, 20, 10"
                                                         TextWrapping="Wrap"
                                                         FontFamily="Segoe UI Emoji"
                                                         Text="{x:Bind MainContent}"
                                                         WrapCodeBlock="True"
                                                         UseSyntaxHighlighting="True"
-                                                        CodeBackground="#1a1a1a" />
+                                                        Background="#1a1a1a"
+                                                        CodeBackground="#0a0a0a" />
                         </StackPanel>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
 
-        <!-- Overlap on messages -->
+        <!-- Settings popup -->
         <Popup Grid.Row="0" x:Name="SettingsPopup" IsLightDismissEnabled="True">
             <Border Background="#1a1a1a" BorderBrush="#2a2a2a" BorderThickness="1" Padding="10">
                 <StackPanel>
                     <TextBlock Text="Enter system prompt:" Margin="0,0,0,5" />
-                    <TextBox x:Name="SystemPromptTextBox" MinWidth="300" AcceptsReturn ="True" IsSpellCheckEnabled="False" Margin="0,0,0,5" />
+                    <TextBox x:Name="SystemPromptTextBox"   
+                             MinWidth="300" 
+                             TextWrapping="Wrap"
+                             AcceptsReturn ="True" 
+                             IsSpellCheckEnabled="False" 
+                             Margin="0,0,0,5" />
                     <Button Content="Submit" Click="SubmitButton_Click" />
                 </StackPanel>
             </Border>
@@ -75,7 +91,8 @@
         <!-- User Input Panel Placeholder -->
         <Border Grid.Row="1"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                Margin="0, 0, 0, 40">
 
             <!-- User Input Panel -->
             <StackPanel Orientation="Vertical"
