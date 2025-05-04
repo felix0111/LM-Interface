@@ -20,11 +20,11 @@ namespace LMInterface
 
         public JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore };
 
-        public async Task ChatCompletion(List<Message> conversation, bool think, Action<LMResponse> responseHandling) {
+        public async Task ChatCompletion(List<Message> conversation, bool think, bool allowTools, Action<LMResponse> responseHandling) {
             if (_clientInUse) return;
             _clientInUse = true;
 
-            LMRequest request = LMHelper.MakeJsonRequest_Qwen3(conversation, think);
+            LMRequest request = LMHelper.MakeJsonRequest_Qwen3(conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, "auto");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
@@ -52,17 +52,15 @@ namespace LMInterface
 
         //current last message should be the user supplying the tools
         private async Task SupplyToolResult(List<Message> conversation, bool think, LMResponse toolRequest, Action<LMResponse> actualResponse) {
-            LMRequest toolCallReponse = LMHelper.MakeJsonRequest_Qwen3(conversation, think);
-
             //do not give tools in toolcall response to avoid repeating tool calls
-            toolCallReponse.ToolChoice = "none";
-            toolCallReponse.Tools = null;
+            LMRequest toolCallReponse = LMHelper.MakeJsonRequest_Qwen3(conversation, think, null, "none");
 
-            //add the "tool call"-response to the conversation history
+            //add the "tool call"-response from the model to the conversation history
             toolCallReponse.Messages.Add(toolRequest.Choices[0].Message);
 
-            //add results of all called tools and add them to the conversation
-            List<Message> toolResults = await LMHelper.GetToolResults(toolRequest.Choices[0].Message.ToolCalls);
+            //add results of the called tools and add them to the conversation
+            //TODO might need to add /no_think to the end of each response
+            List<ToolCallResponse> toolResults = await LMHelper.GetToolResults(toolRequest.Choices[0].Message.ToolCalls!);
             toolCallReponse.Messages.AddRange(toolResults);
 
             //convert json

@@ -58,11 +58,11 @@ namespace LMInterface
             if (rawText == "") return;
 
             //show message on page
-            AddMessageToConversation(new() { Role = "user", Content = rawText });
+            AddMessageToConversation(new Message() { Role = "user", Content = rawText });
 
             //send message to language model (async)
             var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked.Value, response => {
+            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked.Value, ToolButton.IsChecked.Value, response => {
                 //add response to conversation in UI thread!!!
                 dis.TryEnqueue(() => AddMessageToConversation(response.Choices[0].Message));
             });

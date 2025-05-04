@@ -125,8 +125,8 @@
                     <ToggleButton x:Name="ThinkButton" CornerRadius="10">
                         <TextBlock Text="Encourage Thinking"/>
                     </ToggleButton>
-                    <ToggleButton x:Name="WebButton" CornerRadius="10">
-                        <TextBlock Text="Enable Web-Search"/>
+                    <ToggleButton x:Name="ToolButton" CornerRadius="10">
+                        <TextBlock Text="Enable Tools"/>
                     </ToggleButton>
                     <Button CornerRadius="10" ClickMode="Release" Click="SettingsButton_Click">
                         <SymbolIcon Symbol="Setting"></SymbolIcon>

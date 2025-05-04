@@ -52,7 +52,7 @@ namespace LMInterface
         /// <summary>
         /// Automatically removes unnecessary sections and messages from the conversation. (Thinking sections and tool calls/results)
         /// </summary>
-        public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think) {
+        public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think, List<Tool>? toolset, string toolChoice) {
             var convo = conversation.Where(o => o.Role != "tool").Select(o => o.WithoutThinkSection()).ToList();
             if (!think) convo[^1].Content += " /no_think";
 
@@ -60,22 +60,8 @@ namespace LMInterface
                 Model = "unsloth/qwen3-30b-a3b",
                 MaxTokens = 4096,
                 Messages = convo,
-                Tools = new() {
-                    new() {
-                        Function = new() {
-                            Name = "WebsiteContent",
-                            Description = "Used to fetch the content of a website in a markdown format.",
-                            Parameters = new() {
-                                Properties = new() {
-                                    { "url", new() { Description = "The URL of the website.", Type = "string" } },
-                                    { "nodes", new () {Description = "The XPath expression used as a filter. (optional)", Type = "string"}}
-                                },
-                                Required = new() { "url" }
-                            }
-                        }
-                    }
-                },
-                ToolChoice = "auto",
+                Tools = toolset,
+                ToolChoice = toolChoice,
                 Temperature = think ? 0.6 : 0.7,
                 TopP = think ? 0.95 : 0.8,
                 TopK = 20,
@@ -83,22 +69,14 @@ namespace LMInterface
             };
         }
 
-        public static async Task<List<Message>> GetToolResults(List<ToolCall> toolCalls) {
-            List<Message> results = new();
+        public static async Task<List<ToolCallResponse>> GetToolResults(List<ToolCall> toolCalls) {
+            List<ToolCallResponse> results = new();
 
             foreach (ToolCall toolCall in toolCalls) {
 
                 switch (toolCall.ToolCallArguments.Name) {
                     case "WebsiteContent":
-                        //deserialize arguments
-                        HttpHelper.JsonUrl? jsonUrl = JsonConvert.DeserializeObject<HttpHelper.JsonUrl>(toolCall.ToolCallArguments.Arguments);
-                        if (jsonUrl == null) {
-                            results.Add(new ToolCallResponse() { Role = "tool", Content = $"Tool Error: Could not parse the json format!", ToolCallId = toolCall.Id });
-                            break;
-                        }
-
-                        string webContent = await HttpHelper.GetWebsiteContent(jsonUrl.Url, jsonUrl.Nodes);
-                        results.Add(new ToolCallResponse() {Role = "tool", Content = webContent, ToolCallId = toolCall.Id});
+                        results.Add(await WebTool.GetToolResponse(toolCall.Id, toolCall.ToolCallArguments));
                         break;
                     default:
                         results.Add(new ToolCallResponse() {Role = "tool", Content = $"Error: Could not find tool with name: {toolCall.ToolCallArguments.Name}!", ToolCallId = toolCall.Id});
