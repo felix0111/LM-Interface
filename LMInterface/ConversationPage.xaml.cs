@@ -58,7 +58,7 @@ namespace LMInterface
             if (rawText == "") return;
 
             //show message on page
-            AddMessageToConversation(new() { Role = "user", Content = rawText, Think = ThinkButton.IsChecked!.Value });
+            AddMessageToConversation(new() { Role = "user", Content = rawText });
 
             //send message to language model (async)
             var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();

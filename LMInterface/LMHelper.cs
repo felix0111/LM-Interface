@@ -39,18 +39,25 @@ namespace LMInterface
                 int indexStart = s.IndexOf(startTag, StringComparison.CurrentCulture);
                 int indexEnd = s.IndexOf(endTag, StringComparison.CurrentCulture);
 
+                //if endTag was not found
+                if (indexEnd == -1) return "";
+
                 return s.Substring(indexStart + startTag.Length, indexEnd - (indexStart + startTag.Length));
             }
 
+            //if tag was not found
             return "";
         }
 
+        /// <summary>
+        /// Automatically removes unnecessary sections and messages from the conversation. (Thinking sections and tool calls/results)
+        /// </summary>
         public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think) {
-            var convo = conversation.Select(o => o.WithoutThinkSection()).ToList();
+            var convo = conversation.Where(o => o.Role != "tool").Select(o => o.WithoutThinkSection()).ToList();
             if (!think) convo[^1].Content += " /no_think";
 
             return new() {
-                Model = "qwen3-30b-a3b",
+                Model = "unsloth/qwen3-30b-a3b",
                 MaxTokens = 4096,
                 Messages = convo,
                 Tools = new() {
@@ -59,7 +66,6 @@ namespace LMInterface
                             Name = "WebsiteContent",
                             Description = "Used to fetch the content of a website in a markdown format.",
                             Parameters = new() {
-                                Type = "object",
                                 Properties = new() {
                                     { "url", new() { Description = "The URL of the website.", Type = "string" } },
                                     { "nodes", new () {Description = "The XPath expression used as a filter. (optional)", Type = "string"}}
@@ -71,8 +77,8 @@ namespace LMInterface
                 },
                 ToolChoice = "auto",
                 Temperature = think ? 0.6 : 0.7,
-                Top_P = think ? 0.95 : 0.8,
-                Top_K = 20,
+                TopP = think ? 0.95 : 0.8,
+                TopK = 20,
                 Stream = false
             };
         }
@@ -82,17 +88,20 @@ namespace LMInterface
 
             foreach (ToolCall toolCall in toolCalls) {
 
-                switch (toolCall.Function.Name) {
+                switch (toolCall.ToolCallArguments.Name) {
                     case "WebsiteContent":
-                        string webContent = "";
-                        string url = JsonConvert.DeserializeObject<HttpHelper.JsonUrl>(toolCall.Function.Arguments)!.Url;
-                        string? xpath = JsonConvert.DeserializeObject<HttpHelper.JsonUrl>(toolCall.Function.Arguments)!.Nodes;
-                        await HttpHelper.GetWebsiteContent(url, xpath, result => webContent = result);
+                        //deserialize arguments
+                        HttpHelper.JsonUrl? jsonUrl = JsonConvert.DeserializeObject<HttpHelper.JsonUrl>(toolCall.ToolCallArguments.Arguments);
+                        if (jsonUrl == null) {
+                            results.Add(new ToolCallResponse() { Role = "tool", Content = $"Tool Error: Could not parse the json format!", ToolCallId = toolCall.Id });
+                            break;
+                        }
 
-                        results.Add(new() {Role = "tool", Content = webContent});
+                        string webContent = await HttpHelper.GetWebsiteContent(jsonUrl.Url, jsonUrl.Nodes);
+                        results.Add(new ToolCallResponse() {Role = "tool", Content = webContent, ToolCallId = toolCall.Id});
                         break;
                     default:
-                        results.Add(new Message() {Role = "tool", Content = $"Error: Could not find tool with name: {toolCall.Function.Name}!"});
+                        results.Add(new ToolCallResponse() {Role = "tool", Content = $"Error: Could not find tool with name: {toolCall.ToolCallArguments.Name}!", ToolCallId = toolCall.Id});
                         break;
                 }
 

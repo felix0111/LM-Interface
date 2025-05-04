@@ -39,7 +39,7 @@ namespace LMInterface
             LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize response!");
 
             //if model calls tools
-            if (modelResponse.ToolCall) {
+            if (modelResponse.IsToolCall) {
                 await SupplyToolResult(conversation, think, modelResponse, lmResponse => {
                     _clientInUse = false;
                     responseHandling.Invoke(lmResponse);
