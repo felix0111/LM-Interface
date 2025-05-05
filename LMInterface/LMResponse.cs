@@ -4,9 +4,6 @@ using Newtonsoft.Json;
 namespace LMInterface
 {
     public class LMResponse {
-
-        public bool IsToolCall => Choices[0].Message.ToolCalls != null;
-
         [JsonProperty("id")] public required string Id { get; set; }
         [JsonProperty("object")] public string Object => "chat.completion"; //must be chat.completion
         [JsonProperty("created")] public int Created { get; set; } //unix timestamp in s
@@ -25,6 +22,8 @@ namespace LMInterface
     }
 
     public partial class Message {
+        public bool IsToolCall => ToolCalls != null;
+
         [JsonProperty("tool_calls")] public List<ToolCall>? ToolCalls { get; set; } // if the model wants to use tools
     }
 
@@ -35,7 +34,7 @@ namespace LMInterface
     }
 
     public class ToolCallArguments {
-        [JsonProperty("name")] public required string Name { get; set; }
+        [JsonProperty("name")] public required string Name { get; set; } //the name of the tool
         [JsonProperty("arguments")] public required string Arguments { get; set; } //defines all arguments in json format
     }
     

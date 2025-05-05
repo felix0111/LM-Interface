@@ -60,11 +60,34 @@ namespace LMInterface
             //show message on page
             AddMessageToConversation(new Message() { Role = "user", Content = rawText });
 
+            //TODO might have to come back to this mess some time later..
             //send message to language model (async)
             var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked.Value, ToolButton.IsChecked.Value, response => {
-                //add response to conversation in UI thread!!!
-                dis.TryEnqueue(() => AddMessageToConversation(response.Choices[0].Message));
+            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked!.Value, ToolButton.IsChecked!.Value, async response => {
+
+                //add response to conversation in UI thread (happens after this task is done!!)
+                dis.TryEnqueue(() => {
+                    AddMessageToConversation(response.Choices[0].Message);
+                });
+
+                if (!response.Choices[0].Message.IsToolCall) return;
+
+                //send all tool results to model and get response
+                //have to append the last message (toolcall) because it's not yet added to the conversation
+                _ = LMStudioInterface.SendToolResults(Conversation.Append(response.Choices[0].Message).ToList(), ThinkButton.IsChecked.Value, 
+                    results => {
+                    dis.TryEnqueue(() => {
+                        //add all generated tool results to conversation
+                        foreach (var result in results) {
+                            AddMessageToConversation(result);
+                        }
+                    });
+                } , actualResponse => {
+                    dis.TryEnqueue(() => {
+                        //add the actual model response to conversation
+                        AddMessageToConversation(actualResponse.Choices[0].Message);
+                    });
+                });
             });
         }
 
@@ -83,7 +106,7 @@ namespace LMInterface
         }
 
         //changes some expander properties that are not directly accessible in xaml
-        private void ThoughtsExpander_Loaded(object sender, RoutedEventArgs e) {
+        private void Expander_Loaded(object sender, RoutedEventArgs e) {
             var expander = (Expander)sender;
             expander.ApplyTemplate();
 
@@ -126,12 +149,15 @@ namespace LMInterface
         }
 
         public Visibility ThoughtsVisible => Thoughts.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
-
+        public Visibility ToolCallVisible => ToolCall.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility ToolCallResultVisible => ToolCallResult.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
         public Visibility MainContentVisible => MainContent.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
 
-        public string Thoughts => Content == null ? "" : Content.GetTag("think");
+        public string ToolCall => ToolCalls != null ? ToolCalls!.Select(o => $"{o.ToolCallArguments.Name} : {o.ToolCallArguments.Arguments}").Aggregate((s, s1) => $"{s}  \n{s1}") : "";
+        public string ToolCallResult => ToolCallId != null ? Content! : "";
 
-        public string MainContent => Content == null ? "" : Content.RemoveTag("think", out _);
+        public string Thoughts => Content == null ? "" : Content.GetTag("think");
+        public string MainContent => Content == null || ToolCallId != null ? "" : Content.RemoveTag("think", out _).RemoveTag("tool", out _);
 
         public Message WithoutThinkSection() {
             Message clone = Clone();

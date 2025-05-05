@@ -21,15 +21,17 @@ namespace LMInterface {
             };
         }
 
-        public static async Task<ToolCallResponse> GetToolResponse(string toolCallId, ToolCallArguments arguments) {
-            HttpHelper.JsonUrl? jsonUrl = JsonConvert.DeserializeObject<HttpHelper.JsonUrl>(arguments.Arguments);
-            if (jsonUrl == null) {
-                return new ToolCallResponse() { Role = "tool", Content = $"Tool Error: Could not parse the json format!", ToolCallId = toolCallId };
-            }
+        public static async Task<string> GetResult(string arguments) {
+            WebToolArguments? jsonUrl = JsonConvert.DeserializeObject<WebToolArguments>(arguments);
+            if (jsonUrl == null) return "Tool Error: Could not parse the json format!";
 
-            string webContent = await HttpHelper.GetWebsiteContent(jsonUrl.Url, jsonUrl.Nodes);
-            return new ToolCallResponse() {Role = "tool", Content = webContent, ToolCallId = toolCallId};
+            return await HttpHelper.GetWebsiteContent(jsonUrl.Url, jsonUrl.Nodes);
         }
 
+    }
+
+    public class WebToolArguments {
+        [JsonProperty("url")] public required string Url { get; set; }
+        [JsonProperty("nodes")] public string? Nodes { get; set; } //the xpath expression used for search
     }
 }

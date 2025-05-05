@@ -53,7 +53,7 @@ namespace LMInterface
         /// Automatically removes unnecessary sections and messages from the conversation. (Thinking sections and tool calls/results)
         /// </summary>
         public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think, List<Tool>? toolset, string toolChoice) {
-            var convo = conversation.Where(o => o.Role != "tool").Select(o => o.WithoutThinkSection()).ToList();
+            var convo = conversation.Where(o => !o.IsToolCall && !o.IsToolCallResult).Select(o => o.WithoutThinkSection()).ToList();
             if (!think) convo[^1].Content += " /no_think";
 
             return new() {
@@ -69,20 +69,21 @@ namespace LMInterface
             };
         }
 
-        public static async Task<List<ToolCallResponse>> GetToolResults(List<ToolCall> toolCalls) {
-            List<ToolCallResponse> results = new();
+        public static async Task<List<Message>> GetToolResults(List<ToolCall> toolCalls) {
+            List<Message> results = new();
 
             foreach (ToolCall toolCall in toolCalls) {
+                Message msg = new () { Role = "tool", Content = "", ToolCallId = toolCall.Id };
 
                 switch (toolCall.ToolCallArguments.Name) {
                     case "WebsiteContent":
-                        results.Add(await WebTool.GetToolResponse(toolCall.Id, toolCall.ToolCallArguments));
+                        msg.Content = await WebTool.GetResult(toolCall.ToolCallArguments.Arguments);
                         break;
                     default:
-                        results.Add(new ToolCallResponse() {Role = "tool", Content = $"Error: Could not find tool with name: {toolCall.ToolCallArguments.Name}!", ToolCallId = toolCall.Id});
+                        msg.Content = $"Error: Could not find tool with name: {toolCall.ToolCallArguments.Name}!";
                         break;
                 }
-
+                results.Add(msg);
             }
 
             return results;

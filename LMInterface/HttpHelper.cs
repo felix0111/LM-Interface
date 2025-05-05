@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Windows.Data.Html;
 using HtmlAgilityPack;
-using Newtonsoft.Json;
 using System.IO;
-using System.Xml.XPath;
 using ReverseMarkdown;
 
 namespace LMInterface
@@ -48,11 +42,6 @@ namespace LMInterface
 
             string text = c.Convert(newDoc.DocumentNode.InnerHtml);
             return text;
-        }
-
-        public class JsonUrl {
-            [JsonProperty("url")] public required string Url { get; set; }
-            [JsonProperty("nodes")] public string? Nodes { get; set; } //the xpath expression used for search
         }
     }
 }

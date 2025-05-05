@@ -21,13 +21,11 @@ namespace LMInterface
             return JsonConvert.DeserializeObject<Message>(JsonConvert.SerializeObject(this))!;
         }
 
-        [JsonProperty("role")] public required string Role { get; set; } // "system", "user", "assistant"
-        [JsonProperty("content")] public required string Content { get; set; } // the actual message
-    }
+        public bool IsToolCallResult => ToolCallId != null;
 
-    //used when responding to tool calls
-    public class ToolCallResponse : Message {
-        [JsonProperty("tool_call_id")] public required string ToolCallId { get; set; }
+        [JsonProperty("role")] public required string Role { get; set; } // "system", "user", "assistant"
+        [JsonProperty("content")] public string? Content { get; set; } // the actual message
+        [JsonProperty("tool_call_id")] public string? ToolCallId { get; set; } //the id of the tool call to respond to
     }
 
     public class Tool {

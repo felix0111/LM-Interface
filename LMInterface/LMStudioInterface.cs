@@ -12,19 +12,20 @@ namespace LMInterface
 {
     public class LMStudioInterface {
 
-        public readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromHours(1) };
-        private bool _clientInUse;
+        public static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromHours(1) };
+        private static bool _clientInUse;
 
-        private readonly string _sendUrl = "http://localhost:1234/v1/chat/completions";
-        private readonly string _modelsUrl = "http://localhost:1234/v1/models";
+        private static readonly string _sendUrl = "http://localhost:1234/v1/chat/completions";
+        private static readonly string _modelsUrl = "http://localhost:1234/v1/models";
 
-        public JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore };
+        public static JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore};
 
         public async Task ChatCompletion(List<Message> conversation, bool think, bool allowTools, Action<LMResponse> responseHandling) {
             if (_clientInUse) return;
             _clientInUse = true;
 
-            LMRequest request = LMHelper.MakeJsonRequest_Qwen3(conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, "auto");
+            //make request object
+            LMRequest request = LMHelper.MakeJsonRequest_Qwen3(conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
@@ -38,29 +39,27 @@ namespace LMInterface
             string responseContent = await response.Content.ReadAsStringAsync();
             LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize response!");
 
-            //if model calls tools
-            if (modelResponse.IsToolCall) {
-                await SupplyToolResult(conversation, think, modelResponse, lmResponse => {
-                    _clientInUse = false;
-                    responseHandling.Invoke(lmResponse);
-                });
-            } else {
-                _clientInUse = false;
-                responseHandling.Invoke(modelResponse);
-            }
+            _clientInUse = false;
+            responseHandling.Invoke(modelResponse);
         }
 
-        //current last message should be the user supplying the tools
-        private async Task SupplyToolResult(List<Message> conversation, bool think, LMResponse toolRequest, Action<LMResponse> actualResponse) {
+        public static async Task SendToolResults(List<Message> conversation, bool think, Action<List<Message>>toolResultsMessages, Action<LMResponse> actualResponse) {
+            if (_clientInUse || !conversation[^1].IsToolCall) return; //shouldnt ever happen
+            _clientInUse = true;
+
             //do not give tools in toolcall response to avoid repeating tool calls
             LMRequest toolCallReponse = LMHelper.MakeJsonRequest_Qwen3(conversation, think, null, "none");
+            //re-add the last toolcall message because it's normally sorted out
+            toolCallReponse.Messages.Add(conversation[^1]);
+            
+            //TODO might need to add /no_think to the end of each response when !think
+            //get all the tool results
+            List<Message> toolResults = await LMHelper.GetToolResults(conversation[^1].ToolCalls!);
 
-            //add the "tool call"-response from the model to the conversation history
-            toolCallReponse.Messages.Add(toolRequest.Choices[0].Message);
+            //send the results so the UI can already show them
+            toolResultsMessages.Invoke(toolResults);
 
-            //add results of the called tools and add them to the conversation
-            //TODO might need to add /no_think to the end of each response
-            List<ToolCallResponse> toolResults = await LMHelper.GetToolResults(toolRequest.Choices[0].Message.ToolCalls!);
+            //add results of the called tools to the conversation history
             toolCallReponse.Messages.AddRange(toolResults);
 
             //convert json
@@ -75,6 +74,7 @@ namespace LMInterface
             string responseContent = await response.Content.ReadAsStringAsync();
             LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize response!");
 
+            _clientInUse = false;
             actualResponse.Invoke(modelResponse);
         }
     }

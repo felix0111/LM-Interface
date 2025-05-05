@@ -31,7 +31,7 @@
                             Background="#1a1a1a" 
                             CornerRadius="10" 
                             HorizontalAlignment="{x:Bind MessageAlignment}">
-                        <!-- Message consists of thinking section and main content section -->
+                        <!-- Message may consists of thinking section, toolcall, toolcallresult and main content section -->
                         <StackPanel Orientation="Vertical">
                             <!-- Thinking Content -->
                             <Expander Visibility="{x:Bind ThoughtsVisible}"
@@ -43,7 +43,7 @@
                                       Padding="0"
                                       Header="Show Toughts"
                                       CornerRadius="5"
-                                      Loaded="ThoughtsExpander_Loaded">
+                                      Loaded="Expander_Loaded">
                                 <Expander.Content>
                                     <controls:MarkdownTextBlock Padding="15"
                                                                 TextWrapping="Wrap"
@@ -56,7 +56,41 @@
                                 </Expander.Content>
                             </Expander>
 
-                            <!-- Main Text Content -->
+                            <!-- ToolCallResult Content -->
+                            <Expander Visibility="{x:Bind ToolCallResultVisible}"
+                                      MinHeight="0"
+                                      MinWidth="0"
+                                      HorizontalAlignment="Left"
+                                      HorizontalContentAlignment="Stretch"
+                                      Margin="15"
+                                      Padding="0"
+                                      Header="Show Tool-Call Result"
+                                      CornerRadius="5"
+                                      Loaded="Expander_Loaded">
+                                <Expander.Content>
+                                    <controls:MarkdownTextBlock Padding="15"
+                                                                TextWrapping="Wrap"
+                                                                FontFamily="Consolas"
+                                                                Text="{x:Bind ToolCallResult}"
+                                                                Background="#0a0a0a"
+                                                                CodeBackground="#0a0a0a"
+                                                                WrapCodeBlock="True"
+                                                                UseSyntaxHighlighting="True" />
+                                </Expander.Content>
+                            </Expander>
+
+                            <!-- ToolCall Content -->
+                            <controls:MarkdownTextBlock Visibility="{x:Bind ToolCallVisible}"
+                                                        Margin="20, 10, 20, 10"
+                                                        TextWrapping="Wrap"
+                                                        FontFamily="Segoe UI Emoji"
+                                                        Text="{x:Bind ToolCall}"
+                                                        WrapCodeBlock="True"
+                                                        UseSyntaxHighlighting="True"
+                                                        Background="#1a1a1a"
+                                                        CodeBackground="#0a0a0a" />
+
+                            <!-- Main Content -->
                             <controls:MarkdownTextBlock Visibility="{x:Bind MainContentVisible}"
                                                         Margin="20, 10, 20, 10"
                                                         TextWrapping="Wrap"
