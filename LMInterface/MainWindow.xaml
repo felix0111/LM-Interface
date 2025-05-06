@@ -21,8 +21,7 @@
 
         <!-- The items in the left menu -->
         <NavigationView.MenuItems>
-            <NavigationViewItem Name="HomeMenuEntry"  Content="Home" Icon="Home" Tag="home"/>
-            <NavigationViewItem Content="Conversation" Icon="Message" Tag="conversation"/>
+            <NavigationViewItem Name="ConversationPage" Content="Conversation" Icon="Message" Tag="conversation"/>
         </NavigationView.MenuItems>
 
         <!-- The main content area -->

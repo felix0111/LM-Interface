@@ -14,7 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="ConversationPage.xaml" />
-    <None Remove="HomePage.xaml" />
     <None Remove="SettingsPage.xaml" />
   </ItemGroup>
 
@@ -41,6 +40,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
@@ -55,11 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="SettingsPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

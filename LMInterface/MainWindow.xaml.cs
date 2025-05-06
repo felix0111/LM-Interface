@@ -14,23 +14,12 @@ namespace LMInterface {
             this.InitializeComponent();
             Instance = this;
 
-            //init menu
-            NavigationView.SelectedItem = HomeMenuEntry;
-
-            //start tick function
-            InitTick();
+            //open conversation page at start
+            NavigationView.SelectedItem = ConversationPage;
         }
 
-        private void InitTick() {
-            var dispatcherTimer = new DispatcherTimer {
-                Interval = TimeSpan.FromSeconds(5)
-            };
-            dispatcherTimer.Tick += Tick;
-            dispatcherTimer.Start();
-        }
-
-        private void Tick(object? sender, object e) {
-            //
+        public void SwitchFrame(Type page) {
+            ContentFrame.Navigate(page);
         }
 
         private void NavigationView_OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
@@ -41,9 +30,6 @@ namespace LMInterface {
             if (selectedItem == null) return;
 
             switch (selectedItem.Tag as string) {
-                case "home":
-                    ContentFrame.Navigate(typeof(HomePage));
-                    break;
                 case "conversation":
                     ContentFrame.Navigate(typeof(ConversationPage));
                     break;
