@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,34 +8,35 @@ using Newtonsoft.Json;
 
 namespace LMInterface
 {
-    public class LMStudioInterface {
+    public static class LMStudioInterface {
 
-        public static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromHours(1) };
+        private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromHours(1) };
+
+        private static string ChatCompletionsUrl => SettingsPage.ApiUrl.TrimEnd('/') + "/chat/completions";
+        private static string ModelsUrl => SettingsPage.ApiUrl.TrimEnd('/') + "/models";
+
+        public static JsonSerializerSettings JsonSettings = new() { NullValueHandling = NullValueHandling.Ignore};
+
         private static bool _clientInUse;
 
-        private static readonly string _sendUrl = "http://localhost:1234/v1/chat/completions";
-        private static readonly string _modelsUrl = "http://localhost:1234/v1/models";
-
-        public static JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore};
-
-        public async Task ChatCompletion(List<Message> conversation, bool think, bool allowTools, Action<LMResponse> responseHandling) {
+        public static async Task ChatCompletion(List<Message> conversation, bool think, bool allowTools, Action<LMResponse> responseHandling) {
             if (_clientInUse) return;
             _clientInUse = true;
 
             //make request object
-            LMRequest request = LMHelper.MakeJsonRequest_Qwen3(conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
+            LMRequest request = LMHelper.MakeApiRequest(SettingsPage.SelectedModel, conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             //send content and wait for response
-            HttpResponseMessage response = await HttpClient.PostAsync(_sendUrl, content);
+            HttpResponseMessage response = await HttpClient.PostAsync(ChatCompletionsUrl, content);
             response.EnsureSuccessStatusCode();
 
             //read response as json and convert to response object
             string responseContent = await response.Content.ReadAsStringAsync();
-            LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize response!");
+            LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'chat/completions' response!");
 
             _clientInUse = false;
             responseHandling.Invoke(modelResponse);
@@ -48,7 +47,7 @@ namespace LMInterface
             _clientInUse = true;
 
             //do not give tools in toolcall response to avoid repeating tool calls
-            LMRequest toolCallReponse = LMHelper.MakeJsonRequest_Qwen3(conversation, think, null, "none");
+            LMRequest toolCallReponse = LMHelper.MakeApiRequest(SettingsPage.SelectedModel, conversation, think, null, "none");
             //re-add the last toolcall message because it's normally sorted out
             toolCallReponse.Messages.Add(conversation[^1]);
             
@@ -67,7 +66,7 @@ namespace LMInterface
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             //send content and wait for response
-            HttpResponseMessage response = await HttpClient.PostAsync(_sendUrl, content);
+            HttpResponseMessage response = await HttpClient.PostAsync(ChatCompletionsUrl, content);
             response.EnsureSuccessStatusCode();
 
             //read response as json and convert to response object
@@ -77,5 +76,49 @@ namespace LMInterface
             _clientInUse = false;
             actualResponse.Invoke(modelResponse);
         }
+
+        public static async Task GetAvailableModels(Action<ModelsResponse> result) {
+            if (_clientInUse) return;
+            _clientInUse = true;
+
+            //get all available models
+            HttpResponseMessage response = await HttpClient.GetAsync(ModelsUrl);
+            response.EnsureSuccessStatusCode();
+
+            //deserialize response
+            string responseContent = await response.Content.ReadAsStringAsync();
+            ModelsResponse mr = JsonConvert.DeserializeObject<ModelsResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'models' response!");
+
+            _clientInUse = false;
+            result.Invoke(mr);
+        }
+    }
+
+    public class ModelsResponse {
+        [JsonProperty("data")] public required List<Model> Data { get; set; }
+        [JsonProperty("object")] private string Object => "list";
+    }
+
+    public class Model {
+
+        public string GetName {
+            get {
+                int id = Id.IndexOf('/') + 1;
+                string formatted = Id.Substring(id).Replace('-', ' ');
+                return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formatted);
+            }
+        }
+        public string GetPublisher {
+            get {
+                int maxId = Id.IndexOf('/');
+                if (maxId == -1) maxId = 0;
+                string formatted = Id.Substring(0, maxId).Replace('-', ' ');
+                return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(formatted);
+            }
+        }
+
+        [JsonProperty("id")] public required string Id { get; set; }
+        [JsonProperty("object")] private string Object => "model";
+        [JsonProperty("owned_by")] public required string OwnedBy { get; set; }
     }
 }

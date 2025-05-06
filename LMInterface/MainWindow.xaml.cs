@@ -8,8 +8,6 @@ namespace LMInterface {
 
         public static MainWindow Instance;
 
-        public LMStudioInterface LMStudio = new();
-
         public MainWindow() {
             this.InitializeComponent();
             Instance = this;

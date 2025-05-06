@@ -6,13 +6,41 @@
     xmlns:local="using:LMInterface"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <TextBlock Text="Welcome to the Settings Page!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="32" />
-    </Grid>
+    <StackPanel Orientation="Vertical"
+                Margin="100"
+                Spacing="10">
+        <!-- API url -->
+        <controls:SettingsCard HeaderIcon="Globe"
+                               Header="API requests will be sent to endpoints at this URL">
+            <TextBox Name="ApiUrlTextBox" Text="http://localhost:1234/v1" PlaceholderText="http://localhost:1234/v1"
+                     Width="300" TextChanged="ApiUrl_Changed" />
+        </controls:SettingsCard>
+
+        <!-- Language model selection -->
+        <controls:SettingsExpander Loaded="ModelsList_Loaded"
+                                   ItemsSource="{x:Bind _availableModels, Mode=OneWay}"
+                                   Header="Language Model"
+                                   HeaderIcon="Setting"
+                                   Description="Language models are fetched from 'models' endpoint">
+            <Grid>
+                <Button Name="RefreshButton" Content="Refresh" Click="RefreshButton_Clicked" />
+                <ProgressRing Name="RefreshProgress" Visibility="Collapsed" Width="20" Height="20" />
+            </Grid>
+
+            <!-- Language model template -->
+            <controls:SettingsExpander.ItemTemplate>
+                <DataTemplate x:DataType="local:Model">
+                    <controls:SettingsCard Header="{x:Bind GetName}"
+                                           Description="{x:Bind GetPublisher}">
+                        <!-- Setting DataContext manually because somehow SettingsCard doesn't receive it from the SettingsExpander -->
+                        <RadioButton GroupName="ModelSelection" DataContext="{x:Bind}" Checked="ModelSelection_Changed" />
+                    </controls:SettingsCard>
+                </DataTemplate>
+            </controls:SettingsExpander.ItemTemplate>
+        </controls:SettingsExpander>
+    </StackPanel>
 </Page>

@@ -52,12 +52,12 @@ namespace LMInterface
         /// <summary>
         /// Automatically removes unnecessary sections and messages from the conversation. (Thinking sections and tool calls/results)
         /// </summary>
-        public static LMRequest MakeJsonRequest_Qwen3(List<Message> conversation, bool think, List<Tool>? toolset, string toolChoice) {
+        public static LMRequest MakeApiRequest(string model, List<Message> conversation, bool think, List<Tool>? toolset, string toolChoice) {
             var convo = conversation.Where(o => !o.IsToolCall && !o.IsToolCallResult).Select(o => o.WithoutThinkSection()).ToList();
             if (!think) convo[^1].Content += " /no_think";
-
+            
             return new() {
-                Model = "unsloth/qwen3-30b-a3b",
+                Model = model,
                 MaxTokens = 4096,
                 Messages = convo,
                 Tools = toolset,

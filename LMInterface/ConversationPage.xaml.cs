@@ -49,6 +49,12 @@ namespace LMInterface
             // Block the Enter key from creating a new line
             keyRoutedEventArgs.Handled = true;
 
+            //if no model selected -> show settings page
+            if (SettingsPage.SelectedModel == "") {
+                MainWindow.Instance.SwitchFrame(typeof(SettingsPage));
+                return;
+            }
+
             //pre-format raw text and clear textbox
             var textBox = (TextBox)sender;
             var rawText = textBox.Text.Replace('\r', '\n').Trim();
@@ -63,7 +69,7 @@ namespace LMInterface
             //TODO might have to come back to this mess some time later..
             //send message to language model (async)
             var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-            _ = MainWindow.Instance.LMStudio.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked!.Value, ToolButton.IsChecked!.Value, async response => {
+            _ = LMStudioInterface.ChatCompletion(Conversation.ToList(), ThinkButton.IsChecked!.Value, ToolButton.IsChecked!.Value, async response => {
 
                 //add response to conversation in UI thread (happens after this task is done!!)
                 dis.TryEnqueue(() => {
