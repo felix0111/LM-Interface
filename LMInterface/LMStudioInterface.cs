@@ -12,8 +12,8 @@ namespace LMInterface
 
         private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromHours(1) };
 
-        private static string ChatCompletionsUrl => SettingsPage.ApiUrl.TrimEnd('/') + "/chat/completions";
-        private static string ModelsUrl => SettingsPage.ApiUrl.TrimEnd('/') + "/models";
+        private static string ChatCompletionsUrl => ServiceProvider.Settings.ApiUrl.TrimEnd('/') + "/chat/completions";
+        private static string ModelsUrl => ServiceProvider.Settings.ApiUrl.TrimEnd('/') + "/models";
 
         public static JsonSerializerSettings JsonSettings = new() { NullValueHandling = NullValueHandling.Ignore};
 
@@ -24,7 +24,7 @@ namespace LMInterface
             _clientInUse = true;
 
             //make request object
-            LMRequest request = LMHelper.MakeApiRequest(SettingsPage.SelectedModel, conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
+            LMRequest request = LMHelper.MakeApiRequest(ServiceProvider.Settings.SelectedModel, conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
@@ -47,7 +47,7 @@ namespace LMInterface
             _clientInUse = true;
 
             //do not give tools in toolcall response to avoid repeating tool calls
-            LMRequest toolCallReponse = LMHelper.MakeApiRequest(SettingsPage.SelectedModel, conversation, think, null, "none");
+            LMRequest toolCallReponse = LMHelper.MakeApiRequest(ServiceProvider.Settings.SelectedModel, conversation, think, null, "none");
             //re-add the last toolcall message because it's normally sorted out
             toolCallReponse.Messages.Add(conversation[^1]);
             
