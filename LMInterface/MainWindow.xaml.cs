@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -11,27 +12,47 @@ namespace LMInterface {
         public MainWindow() {
             this.InitializeComponent();
             Instance = this;
-
-            //open conversation page at start
-            NavigationView.SelectedItem = ConversationPage;
         }
 
-        public void SwitchFrame(Type page) {
-            ContentFrame.Navigate(page);
-        }
+        /// <summary>
+        /// Navigates to the specified page by tag.
+        /// </summary>
+        public void ShowPageByTag(string tag) {
 
-        private void NavigationView_OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
-            
-            if(args.IsSettingsSelected) ContentFrame.Navigate(typeof(SettingsPage));
+            //get the requested page (including settings page)
+            var page = NavigationView.MenuItems
+                .Append(NavigationView.SettingsItem)
+                .OfType<NavigationViewItem>()
+                .FirstOrDefault(o => (string)o.Tag == tag);
 
-            var selectedItem = args.SelectedItem as NavigationViewItem;
-            if (selectedItem == null) return;
+            //if page could not be found
+            if (page == null) return;
 
-            switch (selectedItem.Tag as string) {
-                case "conversation":
-                    ContentFrame.Navigate(typeof(ConversationPage));
-                    break;
+
+            //change the selected item if it's not already selected
+            if (NavigationView.SelectedItem == null || (string)((NavigationViewItem)NavigationView.SelectedItem).Tag != tag) {
+                NavigationView.SelectedItem = page;
             }
+
+            //navigate to the page
+            ContentFrame.Navigate(Type.GetType($"{tag}"));
+        }
+
+        /// <summary>
+        /// Navigates to the page when a new navigation item is selected.
+        /// </summary>
+        private void NavigationView_OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) {
+            ShowPageByTag((string)((NavigationViewItem)args.SelectedItem).Tag);
+        }
+
+        /// <summary>
+        /// Sets the correct tag for the settings navigation item and shows first page when loaded.
+        /// </summary>
+        private void NavigationView_OnLoaded(object sender, RoutedEventArgs e) {
+            ((NavigationViewItem)NavigationView.SettingsItem).Tag = "LMInterface.SettingsPage";
+            
+            //open conversation page at start
+            NavigationView.SelectedItem = NavigationView.MenuItems[0];
         }
     }
 }

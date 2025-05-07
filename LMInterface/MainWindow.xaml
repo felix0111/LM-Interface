@@ -8,20 +8,18 @@
     mc:Ignorable="d"
     Title="LMInterface">
 
-    <NavigationView
-        Name="NavigationView"
-        PaneDisplayMode="Left"
-        IsPaneOpen="True"
-        OpenPaneLength="200"
-        CompactPaneLength="50"
-        Header=""
-        IsBackEnabled="False"
-        IsBackButtonVisible="Collapsed"
-        SelectionChanged="NavigationView_OnSelectionChanged">
+    <NavigationView Name="NavigationView"
+                    PaneDisplayMode="Left"
+                    IsPaneOpen="True"
+                    OpenPaneLength="200"
+                    CompactPaneLength="50"
+                    IsBackButtonVisible="Collapsed"
+                    Loaded="NavigationView_OnLoaded"
+                    SelectionChanged="NavigationView_OnSelectionChanged">
 
         <!-- The items in the left menu -->
         <NavigationView.MenuItems>
-            <NavigationViewItem Name="ConversationPage" Content="Conversation" Icon="Message" Tag="conversation"/>
+            <NavigationViewItem Content="Conversation" Icon="Message" Tag="LMInterface.ConversationPage"/>
         </NavigationView.MenuItems>
 
         <!-- The main content area -->

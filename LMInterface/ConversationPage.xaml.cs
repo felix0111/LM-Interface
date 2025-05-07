@@ -51,7 +51,7 @@ namespace LMInterface
 
             //if no model selected -> show settings page
             if (SettingsPage.SelectedModel == "") {
-                MainWindow.Instance.SwitchFrame(typeof(SettingsPage));
+                MainWindow.Instance.ShowPageByTag("LMInterface.SettingsPage");
                 return;
             }
 
