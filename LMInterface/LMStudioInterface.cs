@@ -77,8 +77,10 @@ namespace LMInterface
             actualResponse.Invoke(modelResponse);
         }
 
+        //TODO Invoke smth before return
         public static async Task GetAvailableModels(Action<ModelsResponse> result) {
             if (_clientInUse) return;
+            if (!HttpHelper.ValidateUrl(ModelsUrl)) return;
             _clientInUse = true;
 
             //get all available models
@@ -89,6 +91,9 @@ namespace LMInterface
             string responseContent = await response.Content.ReadAsStringAsync();
             ModelsResponse mr = JsonConvert.DeserializeObject<ModelsResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'models' response!");
 
+            //set data to empty list to avoid nullreferenceexceptions
+            if (mr.Error != null) mr.Data = new();
+
             _clientInUse = false;
             result.Invoke(mr);
         }
@@ -97,6 +102,7 @@ namespace LMInterface
     public class ModelsResponse {
         [JsonProperty("data")] public required List<Model> Data { get; set; }
         [JsonProperty("object")] private string Object => "list";
+        [JsonProperty("error")] public string? Error { get; set; }
     }
 
     public class Model {
