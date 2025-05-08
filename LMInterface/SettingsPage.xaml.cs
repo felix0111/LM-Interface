@@ -15,14 +15,15 @@ namespace LMInterface {
             this.InitializeComponent();
         }
 
+        //gets all available models
         private void RefreshModelsCollection() {
             RefreshButton.Visibility = Visibility.Collapsed;
             RefreshProgress.Visibility = Visibility.Visible;
+            _availableModels.Clear();
 
             var dis = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
             _ = LMStudioInterface.GetAvailableModels(result => {
                 dis.TryEnqueue(() => {
-                    _availableModels.Clear();
                     foreach (var model in result.Data) {
                         _availableModels.Add(model);
                     }
@@ -33,14 +34,7 @@ namespace LMInterface {
             });
         }
 
-        private void ModelsList_Loaded(object sender, RoutedEventArgs e) {
-            //api url might not be set at this point
-            ServiceProvider.Settings.ApiUrl = ApiUrlTextBox.Text;
-
-            //fetch all available models
-            RefreshModelsCollection();
-        }
-
+        //reflect ModelSelection to SettingsService
         private void ModelSelection_Changed(object sender, RoutedEventArgs routedEventArgs) {
             var toggleButton = (RadioButton)sender;
 
@@ -52,11 +46,30 @@ namespace LMInterface {
             }
         }
 
+        //reflect TextBox to SettingsService
         private void ApiUrl_Changed(object sender, TextChangedEventArgs e) {
             ApiUrlTextBox.BorderBrush = HttpHelper.ValidateUrl(ApiUrlTextBox.Text) ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
             ServiceProvider.Settings.ApiUrl = ApiUrlTextBox.Text;
         }
 
         private void RefreshButton_Clicked(object sender, RoutedEventArgs e) => RefreshModelsCollection();
+
+        /// <summary>
+        /// Initializes controls to reflect the parameters in SettingsService.
+        /// </summary>
+        private void SettingsPage_OnLoaded(object sender, RoutedEventArgs e) {
+            ApiUrlTextBox.Text = ServiceProvider.Settings.ApiUrl;
+            RefreshModelsCollection();
+        }
+
+        /// <summary>
+        /// Checks if the Model which corresponds to this RadioButton is selected und thus needs to be checked.
+        /// </summary>
+        private void RadioButton_Loaded(object sender, RoutedEventArgs e) {
+            var radiobutton = (RadioButton)sender;
+            var model = (Model)radiobutton.DataContext;
+
+            if(ServiceProvider.Settings.SelectedModel == model.Id) radiobutton.IsChecked = true;
+        }
     }
 }

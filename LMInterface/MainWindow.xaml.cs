@@ -55,5 +55,15 @@ namespace LMInterface {
             //open conversation page at start
             NavigationView.SelectedItem = NavigationView.MenuItems[0];
         }
+
+        /// <summary>
+        /// Loads all services when the window gets opened.
+        /// </summary>
+        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args) => await ServiceProvider.LoadSaves().ConfigureAwait(false);
+
+        /// <summary>
+        /// Save all stuff before closing application.
+        /// </summary>
+        private async void MainWindow_OnClosed(object sender, WindowEventArgs args) => await ServiceProvider.SaveServices().ConfigureAwait(false);
     }
 }
