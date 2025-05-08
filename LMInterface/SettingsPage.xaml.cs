@@ -1,6 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml.Media;
+using Colors = Microsoft.UI.Colors;
 
 namespace LMInterface {
 
@@ -50,7 +52,10 @@ namespace LMInterface {
             }
         }
 
-        private void ApiUrl_Changed(object sender, TextChangedEventArgs e) => ServiceProvider.Settings.ApiUrl = ApiUrlTextBox.Text;
+        private void ApiUrl_Changed(object sender, TextChangedEventArgs e) {
+            ApiUrlTextBox.BorderBrush = HttpHelper.ValidateUrl(ApiUrlTextBox.Text) ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
+            ServiceProvider.Settings.ApiUrl = ApiUrlTextBox.Text;
+        }
 
         private void RefreshButton_Clicked(object sender, RoutedEventArgs e) => RefreshModelsCollection();
     }

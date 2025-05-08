@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using System.IO;
 using ReverseMarkdown;
 
 namespace LMInterface
@@ -42,6 +41,10 @@ namespace LMInterface
 
             string text = c.Convert(newDoc.DocumentNode.InnerHtml);
             return text;
+        }
+
+        public static bool ValidateUrl(string url) {
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
     }
 }

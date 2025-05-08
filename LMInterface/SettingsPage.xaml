@@ -16,8 +16,13 @@
         <!-- API url -->
         <controls:SettingsCard HeaderIcon="Globe"
                                Header="API requests will be sent to endpoints at this URL">
-            <TextBox Name="ApiUrlTextBox" Text="http://localhost:1234/v1" PlaceholderText="http://localhost:1234/v1"
-                     Width="300" TextChanged="ApiUrl_Changed" />
+            <TextBox Name="ApiUrlTextBox" 
+                     Text="http://localhost:1234/v1" 
+                     PlaceholderText="http://localhost:1234/v1"
+                     Width="300"
+                     BorderBrush="Green"
+                     BorderThickness="1"
+                     TextChanged="ApiUrl_Changed" />
         </controls:SettingsCard>
 
         <!-- Language model selection -->
