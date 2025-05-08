@@ -9,6 +9,8 @@ namespace LMInterface {
 
         public static MainWindow Instance;
 
+        public Page? CurrentPage => NavigationView.Content as Page;
+
         public MainWindow() {
             this.InitializeComponent();
             Instance = this;
@@ -27,7 +29,6 @@ namespace LMInterface {
 
             //if page could not be found
             if (page == null) return;
-
 
             //change the selected item if it's not already selected
             if (NavigationView.SelectedItem == null || (string)((NavigationViewItem)NavigationView.SelectedItem).Tag != tag) {
