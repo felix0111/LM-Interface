@@ -10,7 +10,7 @@ namespace LMInterface
 
         public static Settings Settings { get; private set; } = new ();
 
-        public static async Task LoadSaves() {
+        public static async Task LoadServices() {
             Settings = await LoadService<Settings>();
         }
 

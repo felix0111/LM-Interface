@@ -59,7 +59,7 @@ namespace LMInterface {
         /// <summary>
         /// Loads all services when the window gets opened.
         /// </summary>
-        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args) => await ServiceProvider.LoadSaves().ConfigureAwait(false);
+        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args) => await ServiceProvider.LoadServices().ConfigureAwait(false);
 
         /// <summary>
         /// Save all stuff before closing application.
