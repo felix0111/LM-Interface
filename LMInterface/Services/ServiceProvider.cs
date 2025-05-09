@@ -4,7 +4,7 @@ using Windows.Storage;
 using CommunityToolkit.WinUI.Helpers;
 using Newtonsoft.Json;
 
-namespace LMInterface
+namespace LMInterface.Services
 {
     public static class ServiceProvider {
 

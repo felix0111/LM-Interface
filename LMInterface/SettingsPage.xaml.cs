@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Media;
 using Colors = Microsoft.UI.Colors;
+using LMInterface.Services;
 
 namespace LMInterface {
 

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace LMInterface
+namespace LMInterface.Services
 {
     public class Settings {
 
