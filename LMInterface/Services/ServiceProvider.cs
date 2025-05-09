@@ -8,14 +8,14 @@ namespace LMInterface.Services
 {
     public static class ServiceProvider {
 
-        public static Settings Settings { get; private set; } = new ();
+        public static SettingsService SettingsService { get; private set; } = new ();
 
         public static async Task LoadServices() {
-            Settings = await LoadService<Settings>();
+            SettingsService = await LoadService<SettingsService>();
         }
 
         public static async Task SaveServices() {
-            await SaveService(Settings);
+            await SaveService(SettingsService);
         }
 
         private static async Task<T> LoadService<T>() where T : new() {

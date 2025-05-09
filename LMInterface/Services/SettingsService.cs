@@ -2,7 +2,7 @@
 
 namespace LMInterface.Services
 {
-    public class Settings {
+    public class SettingsService {
 
         //API stuff
         [JsonProperty("api_url")] public string? ApiUrl { get; set; } = "";

@@ -51,7 +51,7 @@ namespace LMInterface
             keyRoutedEventArgs.Handled = true;
 
             //if no model selected -> show settings page
-            if (ServiceProvider.Settings.SelectedModel == "") {
+            if (ServiceProvider.SettingsService.SelectedModel == "") {
                 MainWindow.Instance.ShowPageByTag("LMInterface.SettingsPage");
                 return;
             }

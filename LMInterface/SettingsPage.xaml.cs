@@ -41,16 +41,16 @@ namespace LMInterface {
 
             if (toggleButton.IsChecked!.Value && toggleButton.DataContext != null) {
                 var data = (Model)toggleButton.DataContext;
-                ServiceProvider.Settings.SelectedModel = data.Id;
+                ServiceProvider.SettingsService.SelectedModel = data.Id;
             } else {
-                ServiceProvider.Settings.SelectedModel = "";
+                ServiceProvider.SettingsService.SelectedModel = "";
             }
         }
 
         //reflect TextBox to SettingsService
         private void ApiUrl_Changed(object sender, TextChangedEventArgs e) {
             ApiUrlTextBox.BorderBrush = HttpHelper.ValidateUrl(ApiUrlTextBox.Text) ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.Red);
-            ServiceProvider.Settings.ApiUrl = ApiUrlTextBox.Text;
+            ServiceProvider.SettingsService.ApiUrl = ApiUrlTextBox.Text;
         }
 
         private void RefreshButton_Clicked(object sender, RoutedEventArgs e) => RefreshModelsCollection();
@@ -59,7 +59,7 @@ namespace LMInterface {
         /// Initializes controls to reflect the parameters in SettingsService.
         /// </summary>
         private void SettingsPage_OnLoaded(object sender, RoutedEventArgs e) {
-            ApiUrlTextBox.Text = ServiceProvider.Settings.ApiUrl;
+            ApiUrlTextBox.Text = ServiceProvider.SettingsService.ApiUrl;
             RefreshModelsCollection();
         }
 
@@ -70,7 +70,7 @@ namespace LMInterface {
             var radiobutton = (RadioButton)sender;
             var model = (Model)radiobutton.DataContext;
 
-            if(ServiceProvider.Settings.SelectedModel == model.Id) radiobutton.IsChecked = true;
+            if(ServiceProvider.SettingsService.SelectedModel == model.Id) radiobutton.IsChecked = true;
         }
     }
 }
