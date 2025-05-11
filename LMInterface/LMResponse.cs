@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace LMInterface
@@ -31,11 +32,23 @@ namespace LMInterface
         [JsonProperty("id")] public required string Id { get; set; }
         [JsonProperty("type")] private string Type => "function"; //must be function
         [JsonProperty("function")] public required ToolCallArguments ToolCallArguments { get; set; } //contains the function arguments
+
+        [SetsRequiredMembers]
+        public ToolCall() {
+            Id = "";
+            ToolCallArguments = new();
+        }
     }
 
     public class ToolCallArguments {
         [JsonProperty("name")] public required string Name { get; set; } //the name of the tool
         [JsonProperty("arguments")] public required string Arguments { get; set; } //defines all arguments in json format
+
+        [SetsRequiredMembers]
+        public ToolCallArguments() {
+            Name = "";
+            Arguments = "";
+        }
     }
     
 

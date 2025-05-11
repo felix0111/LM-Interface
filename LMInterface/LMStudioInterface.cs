@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,12 +21,12 @@ namespace LMInterface
 
         private static bool _clientInUse;
 
-        public static async Task ChatCompletion(List<Message> conversation, bool think, bool allowTools, Action<LMResponse> responseHandling) {
-            if (_clientInUse) return;
+        public static async Task<LMResponse?> ChatCompletion(Conversation conversation, bool think, bool allowTools) {
+            if (_clientInUse) return null;
             _clientInUse = true;
 
             //make request object
-            LMRequest request = LMHelper.MakeApiRequest(ServiceProvider.SettingsService.SelectedModel, conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
+            LMRequest request = LMHelper.MakeApiRequest(conversation.ModelId, conversation.Messages.ToList(), think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
@@ -40,48 +41,12 @@ namespace LMInterface
             LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'chat/completions' response!");
 
             _clientInUse = false;
-            responseHandling.Invoke(modelResponse);
+            return modelResponse;
         }
 
-        public static async Task SendToolResults(List<Message> conversation, bool think, Action<List<Message>>toolResultsMessages, Action<LMResponse> actualResponse) {
-            if (_clientInUse || !conversation[^1].IsToolCall) return; //shouldnt ever happen
-            _clientInUse = true;
-
-            //do not give tools in toolcall response to avoid repeating tool calls
-            LMRequest toolCallReponse = LMHelper.MakeApiRequest(ServiceProvider.SettingsService.SelectedModel, conversation, think, null, "none");
-            //re-add the last toolcall message because it's normally sorted out
-            toolCallReponse.Messages.Add(conversation[^1]);
-            
-            //TODO might need to add /no_think to the end of each response when !think
-            //get all the tool results
-            List<Message> toolResults = await LMHelper.GetToolResults(conversation[^1].ToolCalls!);
-
-            //send the results so the UI can already show them
-            toolResultsMessages.Invoke(toolResults);
-
-            //add results of the called tools to the conversation history
-            toolCallReponse.Messages.AddRange(toolResults);
-
-            //convert json
-            var json = JsonConvert.SerializeObject(toolCallReponse, JsonSettings);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            //send content and wait for response
-            HttpResponseMessage response = await HttpClient.PostAsync(ChatCompletionsUrl, content);
-            response.EnsureSuccessStatusCode();
-
-            //read response as json and convert to response object
-            string responseContent = await response.Content.ReadAsStringAsync();
-            LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize response!");
-
-            _clientInUse = false;
-            actualResponse.Invoke(modelResponse);
-        }
-
-        //TODO Invoke smth before return
-        public static async Task GetAvailableModels(Action<ModelsResponse> result) {
-            if (_clientInUse) return;
-            if (!HttpHelper.ValidateUrl(ModelsUrl)) return;
+        public static async Task<ModelsResponse?> GetAvailableModels() {
+            if (_clientInUse) return null;
+            if (!HttpHelper.ValidateUrl(ModelsUrl)) return null;
             _clientInUse = true;
 
             //get all available models
@@ -96,7 +61,7 @@ namespace LMInterface
             if (mr.Error != null) mr.Data = new();
 
             _clientInUse = false;
-            result.Invoke(mr);
+            return mr;
         }
     }
 

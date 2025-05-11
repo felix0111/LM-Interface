@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using LMInterface.Services;
+using Microsoft.UI.Xaml;
 
 namespace LMInterface {
     /// <summary>
@@ -20,10 +21,11 @@ namespace LMInterface {
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args) {
+        protected override async void OnLaunched(LaunchActivatedEventArgs args) {
+            await ServiceProvider.LoadServices();
+
             _mainWindow = new MainWindow();
             _mainWindow.Activate();
         }
-        
     }
 }

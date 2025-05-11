@@ -10,12 +10,16 @@ namespace LMInterface.Services
 
         public static SettingsService SettingsService { get; private set; } = new ();
 
+        public static ConversationService ConversationService { get; private set; } = new() {Conversations = new()};
+
         public static async Task LoadServices() {
             SettingsService = await LoadService<SettingsService>();
+            ConversationService = await LoadService<ConversationService>();
         }
 
         public static async Task SaveServices() {
             await SaveService(SettingsService);
+            await SaveService(ConversationService);
         }
 
         private static async Task<T> LoadService<T>() where T : new() {
@@ -29,9 +33,8 @@ namespace LMInterface.Services
         }
 
         private static async Task SaveService<T>(T service) {
-            //create/overwrite file with name of type
             var file = await ApplicationData.Current.LocalFolder.CreateFileAsync($"{typeof(T).Name}.json", CreationCollisionOption.ReplaceExisting);
-
+            
             var json = JsonConvert.SerializeObject(service);
             await FileIO.WriteTextAsync(file, json);
         }

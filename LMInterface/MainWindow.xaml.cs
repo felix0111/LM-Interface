@@ -1,8 +1,11 @@
 using System;
 using System.Linq;
 using LMInterface.Services;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Windowing;
+using WinRT.Interop;
 
 namespace LMInterface {
 
@@ -15,6 +18,12 @@ namespace LMInterface {
         public MainWindow() {
             this.InitializeComponent();
             Instance = this;
+
+            //hook to the Closing event so I can save all stuff beforehand
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.Closing += MainWindow_OnClosed;
         }
 
         /// <summary>
@@ -58,13 +67,16 @@ namespace LMInterface {
         }
 
         /// <summary>
-        /// Loads all services when the window gets opened.
-        /// </summary>
-        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args) => await ServiceProvider.LoadServices().ConfigureAwait(false);
-
-        /// <summary>
         /// Save all stuff before closing application.
         /// </summary>
-        private async void MainWindow_OnClosed(object sender, WindowEventArgs args) => await ServiceProvider.SaveServices().ConfigureAwait(false);
+        private async void MainWindow_OnClosed(AppWindow sender, AppWindowClosingEventArgs args) {
+            //stop window from closing
+            args.Cancel = true;
+
+            await ServiceProvider.SaveServices();
+            
+            //manually close window
+            this.Close();
+        }
     }
 }
