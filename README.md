@@ -1,7 +1,7 @@
 # LMInterface
-A WinApp used to communicate with a LLM via HTTP-Endpoints.
+A WinUI 3 application used to communicate with LLMs via API requests e.g. LMStudio.
 
-## Current features:
+## Current (supported) features:
 - Reasoning/Thinking
-- Chatting
+- Multiple Conversations
 - Accessing websites via tool
