@@ -226,6 +226,11 @@ namespace LMInterface
             FetchModelsProgress.Visibility = Visibility.Collapsed;
             FetchModelsButton.Visibility = Visibility.Visible;
         }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e) {
+            var msg = sender.As<HyperlinkButton>().DataContext.As<Message>();
+            _currentTab!.DataContext.As<Conversation>().Messages.Remove(msg);
+        }
     }
 
     /// <summary>
