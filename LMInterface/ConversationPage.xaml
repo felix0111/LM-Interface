@@ -7,6 +7,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
       xmlns:services="using:LMInterface.Services"
+      xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -129,20 +130,25 @@
             </TabView.TabItemTemplate>
         </TabView>
 
-        <!-- Settings popup -->
-        <Popup x:Name="SettingsPopup"
-               IsLightDismissEnabled="True"
-               Grid.Row="0">
-            <Border Background="#1a1a1a"
-                    BorderBrush="#2a2a2a"
-                    BorderThickness="1"
-                    Padding="10">
-                <StackPanel>
+        <!-- Settings dialog -->
+        <ContentDialog x:Name="SettingsPopup"
+                       IsPrimaryButtonEnabled="True"
+                       PrimaryButtonText="Submit"
+                       PrimaryButtonClick="SubmitButton_Click"
+                       Opened="SettingsPopup_OnOpened"
+                       Grid.Row="0">
+            <StackPanel Orientation="Vertical"
+                        MinWidth="800"
+                        Spacing="20">
+                <!-- Model selector -->
+                <controls1:SettingsCard HeaderIcon="Contact"
+                                        Header="The LLM to use">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="10">
                         <ComboBox Name="ModelSelector"
                                   Loaded="ModelSelector_OnLoaded"
-                                  MinWidth="100" />
+                                  MinWidth="200" />
+                        <!-- Either shows Refresh button or ProgressRing -->
                         <Grid>
                             <Button Name="FetchModelsButton"
                                     Content="Refresh"
@@ -154,19 +160,38 @@
                         </Grid>
                     </StackPanel>
 
-                    <TextBlock Text="Enter system prompt:"
-                               Margin="0,0,0,5" />
+                </controls1:SettingsCard>
+
+                <!-- System prompt -->
+                <controls1:SettingsCard HeaderIcon="Repair"
+                                        Header="System Prompt">
                     <TextBox x:Name="SystemPromptTextBox"
                              MinWidth="300"
+                             MaxWidth="500"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
-                             IsSpellCheckEnabled="False"
-                             Margin="0,0,0,5" />
-                    <Button Content="Submit"
-                            Click="SubmitButton_Click" />
-                </StackPanel>
-            </Border>
-        </Popup>
+                             IsSpellCheckEnabled="False"/>
+                </controls1:SettingsCard>
+
+                <!-- Max tokens -->
+                <controls1:SettingsCard HeaderIcon="Message"
+                                        Header="Context Length">
+                    <Slider x:Name="MaxTokens"
+                             Width="200"
+                             Minimum="256" Maximum="40960"/>
+                </controls1:SettingsCard>
+
+                <!-- No reasoning token -->
+                <controls1:SettingsCard HeaderIcon="Comment"
+                                        Header="The No-Reasoning Token">
+                    <TextBox x:Name="NoReasoningTokenTextBox"
+                             MinWidth="150"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="False"
+                             IsSpellCheckEnabled="False"/>
+                </controls1:SettingsCard>
+            </StackPanel>
+        </ContentDialog>
 
         <!-- User Input Panel Placeholder -->
         <Border HorizontalAlignment="Stretch"

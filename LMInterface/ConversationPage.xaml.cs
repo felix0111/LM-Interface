@@ -69,6 +69,7 @@ namespace LMInterface
                 //must update layout because the TabViewItem may not be created at this point
                 ConversationTabs.UpdateLayout();
                 _currentTab = (TabViewItem)ConversationTabs.ContainerFromItem(selectionChangedEventArgs.AddedItems[0].As<Conversation>());
+                _currentTab.Content.As<ListView>().ScrollToLastItem();
             }
             
             ServiceProvider.ConversationService.CurrentConversation = newId;
@@ -114,7 +115,7 @@ namespace LMInterface
 
             //check if a model is selected
             if (conv.ModelId == "") {
-                SettingsPopup.IsOpen = true;
+                SettingsPopup.ShowAsync();
                 ModelSelector.Focus(FocusState.Keyboard);
                 return;
             }
@@ -144,20 +145,36 @@ namespace LMInterface
         }
 
         /// <summary>
-        /// Opens the settings popup for the conversation.
+        /// Opens the settings dialog for the conversation.
         /// </summary>
-        private void SettingsButton_Click(object sender, RoutedEventArgs e) => SettingsPopup.IsOpen = true;
+        private void SettingsButton_Click(object sender, RoutedEventArgs e) => SettingsPopup.ShowAsync();
 
         /// <summary>
-        /// Applies settings and closes popup.
+        /// Synchronizes SettingsPopup to the current settings.
         /// </summary>
-        private void SubmitButton_Click(object sender, RoutedEventArgs e) {
+        private void SettingsPopup_OnOpened(ContentDialog sender, ContentDialogOpenedEventArgs args) {
+            var conv = _currentTab!.DataContext.As<Conversation>();
+
+            ModelSelector.SelectedItem = conv.ModelId;
+
+            Message? systemMessage = conv.GetSystemMessage();
+            SystemPromptTextBox.Text = systemMessage == null ? "" : systemMessage.Content;
+
+            MaxTokens.Value = conv.MaxTokens;
+
+            NoReasoningTokenTextBox.Text = conv.NoReasoningToken;
+        }
+
+        /// <summary>
+        /// Applies settings when dialog closes.
+        /// </summary>
+        private void SubmitButton_Click(ContentDialog contentDialog, ContentDialogButtonClickEventArgs args) {
             var conv = _currentTab!.DataContext.As<Conversation>();
 
             conv.ModelId = (string)ModelSelector.SelectedItem;
+            conv.MaxTokens = (long)MaxTokens.Value;
+            conv.NoReasoningToken = NoReasoningTokenTextBox.Text;
             conv.SetSystemMessage(SystemPromptTextBox.Text, out _);
-
-            SettingsPopup.IsOpen = false;
         }
 
         /// <summary>
@@ -188,8 +205,8 @@ namespace LMInterface
 
         private async void ModelSelector_OnLoaded(object sender, RoutedEventArgs e) {
             var conv = _currentTab!.DataContext.As<Conversation>();
-            
-            await FetchModels();
+
+            if (ModelSelector.Items.Count == 0) await FetchModels();
             if (ModelSelector.Items.Count != 0) ModelSelector.SelectedItem = ModelSelector.Items.Cast<string>().FirstOrDefault(o => o == conv.ModelId, (string)ModelSelector.Items[0]);
         }
 

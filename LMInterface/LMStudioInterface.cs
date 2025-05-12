@@ -26,7 +26,7 @@ namespace LMInterface
             _clientInUse = true;
 
             //make request object
-            LMRequest request = LMHelper.MakeApiRequest(conversation.ModelId, conversation.Messages.ToList(), think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
+            LMRequest request = LMHelper.MakeApiRequest(conversation, think, allowTools ? new List<Tool>() { new WebTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
