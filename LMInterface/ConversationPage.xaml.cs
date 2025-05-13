@@ -227,6 +227,30 @@ namespace LMInterface
             FetchModelsButton.Visibility = Visibility.Visible;
         }
 
+        private void EditButton_Click(object sender, RoutedEventArgs e) {
+            var msg = sender.As<HyperlinkButton>().DataContext.As<Message>();
+            
+            TextBox tb = new TextBox();
+            tb.AcceptsReturn = true;
+            tb.IsSpellCheckEnabled = false;
+            tb.TextWrapping = TextWrapping.Wrap;
+            tb.Text = msg.Content;
+
+            ContentDialog d = new ContentDialog();
+            d.Content = tb;
+            d.IsPrimaryButtonEnabled = true;
+            d.PrimaryButtonText = "Submit";
+            d.Closed += (_, _) => {
+                msg.Content = tb.Text!.Replace('\r', '\n');
+                //reloads the tab, might need a better solution at some point
+                MainWindow.Instance.ShowPageByTag("LMInterface.SettingsPage");
+                MainWindow.Instance.ShowPageByTag("LMInterface.ConversationPage");
+            };
+            d.XamlRoot = XamlRoot;
+
+            d.ShowAsync();
+        }
+
         private void DeleteButton_Click(object sender, RoutedEventArgs e) {
             var msg = sender.As<HyperlinkButton>().DataContext.As<Message>();
             _currentTab!.DataContext.As<Conversation>().Messages.Remove(msg);
@@ -247,7 +271,7 @@ namespace LMInterface
         public Thickness MessageMargin {
             get {
                 if (Role == "system") return new Thickness(60, 15, 60, 15);
-                return Role == "assistant" ? new Thickness(0, 15, 50, 15) : new Thickness(50, 20, 0, 20);
+                return Role == "assistant" ? new Thickness(0, 20, 50, 20) : new Thickness(50, 20, 0, 20);
             }
         }
 

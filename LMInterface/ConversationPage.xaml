@@ -121,18 +121,28 @@
                                                                             CodeBackground="#0a0a0a" />
                                             </StackPanel>
                                         </Border>
-                                        <!-- Delete button -->
-                                        <HyperlinkButton Grid.Row="0"
-                                                         Padding="0"
-                                                         Margin="0, 0, 0, 10"
-                                                         HorizontalAlignment="{x:Bind MessageAlignment}"
-                                                         VerticalAlignment="Bottom"
-                                                         Click="DeleteButton_Click">
-                                            <Viewbox Width="14" Height="14">
-                                                <SymbolIcon Symbol="Delete" Foreground="Gray" />
-                                            </Viewbox>
-                                            
-                                        </HyperlinkButton>
+                                        <StackPanel Orientation="Horizontal" 
+                                                    Spacing="5"
+                                                    HorizontalAlignment="{x:Bind MessageAlignment}" 
+                                                    VerticalAlignment="Bottom">
+                                            <!-- Edit button -->
+                                            <HyperlinkButton Padding="0"
+                                                             Click="EditButton_Click">
+                                                <Viewbox Width="14" Height="14">
+                                                    <SymbolIcon Symbol="Edit" Foreground="Gray" />
+                                                </Viewbox>
+
+                                            </HyperlinkButton>
+                                            <!-- Delete button -->
+                                            <HyperlinkButton Padding="0"
+                                                             Click="DeleteButton_Click">
+                                                <Viewbox Width="14" Height="14">
+                                                    <SymbolIcon Symbol="Delete" Foreground="Gray" />
+                                                </Viewbox>
+
+                                            </HyperlinkButton>
+
+                                        </StackPanel>
                                     </Grid>
                                     
                                 </DataTemplate>
