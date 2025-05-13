@@ -200,7 +200,7 @@
 
                 <!-- Max tokens -->
                 <controls1:SettingsCard HeaderIcon="Message"
-                                        Header="Context Length">
+                                        Header="Maximum Tokens in Response">
                     <Slider x:Name="MaxTokens"
                              Width="200"
                              Minimum="256" Maximum="40960"/>
