@@ -11,8 +11,6 @@
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-
-
     <!-- The main content area -->
     <Grid Background="#0a0a0a">
         <Grid.RowDefinitions>
@@ -232,7 +230,7 @@
                         VerticalAlignment="Center"
                         CornerRadius="20"
                         Background="#2a2a2a">
-
+                <!-- Input Box -->
                 <TextBox Name="InputBox"
                          MinWidth="400"
                          Width="Auto"
@@ -252,19 +250,22 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="5"
                             HorizontalAlignment="Right">
-
+                    <!-- Think Button -->
                     <ToggleButton x:Name="ThinkButton"
-                                  CornerRadius="10">
-                        <TextBlock Text="Encourage Thinking" />
-                    </ToggleButton>
+                                  CornerRadius="10"
+                                  Content="Think" />
+                    <!-- Tools Button -->
                     <ToggleButton x:Name="ToolButton"
-                                  CornerRadius="10">
-                        <TextBlock Text="Enable Tools" />
-                    </ToggleButton>
+                                  CornerRadius="10" Content="Enable Tools"/>
+                    <!-- Time Button -->
+                    <ToggleButton x:Name="TimeButton"
+                                  CornerRadius="10"
+                                  Content="Prepend Time" />
+                    <!-- Settings Button -->
                     <Button CornerRadius="10"
                             ClickMode="Release"
                             Click="SettingsButton_Click">
-                        <SymbolIcon Symbol="Setting"></SymbolIcon>
+                        <SymbolIcon Symbol="Setting"/>
                     </Button>
                 </StackPanel>
 

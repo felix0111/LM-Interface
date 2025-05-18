@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -127,6 +128,13 @@ namespace LMInterface
 
             //if empty then return
             if (rawText == "") return;
+
+            //prepend time if requested
+            if (TimeButton.IsChecked!.Value) {
+                string time = DateTime.Now.ToShortTimeString();
+                string date = DateTime.Now.ToShortDateString();
+                rawText = $"[{time} {date}] {rawText}";
+            }
 
             //add message to conversation
             AddMessageWithScroll(conv, new Message() { Role = "user", Content = rawText });
