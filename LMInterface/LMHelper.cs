@@ -65,7 +65,7 @@ namespace LMInterface
             //if last message in conversation is tool call result, then include the tool call and its result(s) in the final conversation
             if (conv.Messages.Last().IsToolCallResult) {
                 int toolCallIndex = conv.Messages.IndexOf(conv.Messages.Last(o => o.IsToolCall));
-                for (int i = toolCallIndex; i < conv.Messages.Count; i++) finalConversation.Add(conv.Messages[i]);
+                for (int i = toolCallIndex; i < conv.Messages.Count; i++) finalConversation.Add(conv.Messages[i].Clone());
             }
 
             //add no reasoning token
@@ -93,6 +93,9 @@ namespace LMInterface
                 switch (toolCall.ToolCallArguments.Name) {
                     case "WebsiteContent":
                         msg.Content = await WebTool.GetResult(toolCall.ToolCallArguments.Arguments);
+                        break;
+                    case "ExecutePython":
+                        msg.Content = await PythonTool.GetResult(toolCall.ToolCallArguments.Arguments);
                         break;
                     default:
                         msg.Content = $"Error: Could not find tool with name: {toolCall.ToolCallArguments.Name}!";
