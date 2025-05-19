@@ -23,6 +23,7 @@ namespace LMInterface {
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs args) {
             await ServiceProvider.LoadServices();
+            await PythonHelper.RunServer();
 
             _mainWindow = new MainWindow();
             _mainWindow.Activate();

@@ -49,6 +49,11 @@
     <PackageReference Include="ReverseMarkdown" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Python\main.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="ConversationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
