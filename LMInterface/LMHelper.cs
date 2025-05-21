@@ -59,7 +59,7 @@ namespace LMInterface
         /// <summary>
         /// Automatically removes unnecessary sections and messages from the conversation. (Thinking sections and tool calls/results)
         /// </summary>
-        public static LMRequest MakeApiRequest(Conversation conv, bool think, List<Tool>? toolset, string toolChoice) {
+        public static ApiRequest MakeApiRequest(Conversation conv, bool think, List<Tool>? toolset, string toolChoice) {
             //filter conversation
             var finalConversation = conv.Messages.Where(o => !o.IsToolCall && !o.IsToolCallResult).Select(o => o.WithoutThinkSection()).ToList();
 

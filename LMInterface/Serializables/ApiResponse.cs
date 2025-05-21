@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace LMInterface.Serializables
 {
-    public class LMResponse {
+    public class ApiResponse {
         [JsonProperty("id")] public required string Id { get; set; }
         [JsonProperty("object")] public string Object => "chat.completion"; //must be chat.completion
         [JsonProperty("created")] public int Created { get; set; } //unix timestamp in s

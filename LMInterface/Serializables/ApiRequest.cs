@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace LMInterface.Serializables
 {
-    public class LMRequest {
+    public class ApiRequest {
         [JsonProperty("model")] public required string Model { get; set; }
         [JsonProperty("messages")] public required List<ApiMessage> Messages { get; set; }
         [JsonProperty("tools")] public List<Tool>? Tools { get; set; }

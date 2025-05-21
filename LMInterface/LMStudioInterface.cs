@@ -22,12 +22,12 @@ namespace LMInterface
 
         private static bool _clientInUse;
 
-        public static async Task<LMResponse?> ChatCompletion(Conversation conversation, bool think, bool allowTools) {
+        public static async Task<ApiResponse?> ChatCompletion(Conversation conversation, bool think, bool allowTools) {
             if (_clientInUse) return null;
             _clientInUse = true;
 
             //make request object
-            LMRequest request = LMHelper.MakeApiRequest(conversation, think, allowTools ? new List<Tool>() { new WebTool(), new PythonTool() } : null, allowTools ? "auto" : "none");
+            ApiRequest request = LMHelper.MakeApiRequest(conversation, think, allowTools ? new List<Tool>() { new WebTool(), new PythonTool() } : null, allowTools ? "auto" : "none");
 
             //convert request object to json
             var json = JsonConvert.SerializeObject(request, JsonSettings);
@@ -39,7 +39,7 @@ namespace LMInterface
 
             //read response as json and convert to response object
             string responseContent = await response.Content.ReadAsStringAsync();
-            LMResponse modelResponse = JsonConvert.DeserializeObject<LMResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'chat/completions' response!");
+            ApiResponse modelResponse = JsonConvert.DeserializeObject<ApiResponse>(responseContent, JsonSettings) ?? throw new Exception("JSON could not deserialize 'chat/completions' response!");
 
             _clientInUse = false;
             return modelResponse;
