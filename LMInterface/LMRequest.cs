@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using LMInterface.Serializables;
 using Newtonsoft.Json;
 
 namespace LMInterface
 {
     public class LMRequest {
         [JsonProperty("model")] public required string Model { get; set; }
-        [JsonProperty("messages")] public required List<Message> Messages { get; set; }
+        [JsonProperty("messages")] public required List<ApiMessage> Messages { get; set; }
         [JsonProperty("tools")] public List<Tool>? Tools { get; set; }
         [JsonProperty("tool_choice")] public string? ToolChoice { get; set; } // Can be string ("auto", "none", "required")
         [JsonProperty("max_tokens")] public long MaxTokens { get; set; }
@@ -13,19 +14,6 @@ namespace LMInterface
         [JsonProperty("top_p")] public double TopP { get; set; }
         [JsonProperty("top_k")] public double TopK { get; set; }
         [JsonProperty("stream")] public bool Stream { get; set; }
-    }
-
-    public partial class Message {
-
-        public Message Clone() {
-            return JsonConvert.DeserializeObject<Message>(JsonConvert.SerializeObject(this))!;
-        }
-
-        public bool IsToolCallResult => ToolCallId != null;
-
-        [JsonProperty("role")] public required string Role { get; set; } // "system", "user", "assistant"
-        [JsonProperty("content")] public string? Content { get; set; } // the actual message
-        [JsonProperty("tool_call_id")] public string? ToolCallId { get; set; } //the id of the tool call to respond to
     }
 
     public class Tool {

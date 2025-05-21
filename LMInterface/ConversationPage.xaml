@@ -8,6 +8,7 @@
       xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
       xmlns:services="using:LMInterface.Services"
       xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
+      xmlns:serializables="using:LMInterface.Serializables"
       mc:Ignorable="d"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -42,7 +43,7 @@
 
                             <!-- Template message -->
                             <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="local:Message">
+                                <DataTemplate x:DataType="serializables:ApiMessage">
                                     <Grid RowSpacing="0" ColumnSpacing="0">
                                         <Border Margin="{x:Bind MessageMargin}"
                                                 Background="#1a1a1a"

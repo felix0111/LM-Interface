@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using LMInterface.Serializables;
 using Newtonsoft.Json;
 
 namespace LMInterface
@@ -19,13 +20,7 @@ namespace LMInterface
         [JsonProperty("index")] public int Index { get; set; }
         [JsonProperty("logprobs")] public object? Logprobs { get; set; }
         [JsonProperty("finish_reason")] public required string FinishReason { get; set; }
-        [JsonProperty("message")] public required Message Message { get; set; }
-    }
-
-    public partial class Message {
-        public bool IsToolCall => ToolCalls != null;
-
-        [JsonProperty("tool_calls")] public List<ToolCall>? ToolCalls { get; set; } // if the model wants to use tools
+        [JsonProperty("message")] public required ApiMessage Message { get; set; }
     }
 
     public class ToolCall {

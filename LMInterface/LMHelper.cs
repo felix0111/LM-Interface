@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LMInterface.Serializables;
 using LMInterface.Services;
 
 namespace LMInterface
@@ -84,11 +85,11 @@ namespace LMInterface
             };
         }
 
-        public static async Task<List<Message>> GetToolResults(List<ToolCall> toolCalls) {
-            List<Message> results = new();
+        public static async Task<List<ApiMessage>> GetToolResults(List<ToolCall> toolCalls) {
+            List<ApiMessage> results = new();
 
             foreach (ToolCall toolCall in toolCalls) {
-                Message msg = new () { Role = "tool", Content = "", ToolCallId = toolCall.Id };
+                ApiMessage msg = new () { Role = "tool", Content = "", ToolCallId = toolCall.Id };
 
                 switch (toolCall.ToolCallArguments.Name) {
                     case "WebsiteContent":

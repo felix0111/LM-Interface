@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using CommunityToolkit.WinUI.UI;
+using LMInterface.Serializables;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using LMInterface.Services;
@@ -32,7 +33,7 @@ namespace LMInterface
         /// <summary>
         /// Adds message to the end of the list view and may scroll down.
         /// </summary>
-        public void AddMessageWithScroll(Conversation conv, Message message) {
+        public void AddMessageWithScroll(Conversation conv, ApiMessage message) {
 
             //determine if the listview gets automatically scrolled down
             //must be checked before adding message
@@ -137,7 +138,7 @@ namespace LMInterface
             }
 
             //add message to conversation
-            AddMessageWithScroll(conv, new Message() { Role = "user", Content = rawText });
+            AddMessageWithScroll(conv, new ApiMessage() { Role = "user", Content = rawText });
 
             //disable textbox
             InputBox.IsEnabled = false;
@@ -165,7 +166,7 @@ namespace LMInterface
 
             ModelSelector.SelectedItem = conv.ModelId;
 
-            Message? systemMessage = conv.GetSystemMessage();
+            ApiMessage? systemMessage = conv.GetSystemMessage();
             SystemPromptTextBox.Text = systemMessage == null ? "" : systemMessage.Content;
 
             MaxTokens.Value = conv.MaxTokens;
@@ -236,7 +237,7 @@ namespace LMInterface
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e) {
-            var msg = sender.As<HyperlinkButton>().DataContext.As<Message>();
+            var msg = sender.As<HyperlinkButton>().DataContext.As<ApiMessage>();
             
             TextBox tb = new TextBox();
             tb.AcceptsReturn = true;
@@ -260,50 +261,10 @@ namespace LMInterface
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e) {
-            var msg = sender.As<HyperlinkButton>().DataContext.As<Message>();
+            var msg = sender.As<HyperlinkButton>().DataContext.As<ApiMessage>();
             _currentTab!.DataContext.As<Conversation>().Messages.Remove(msg);
         }
     }
 
-    /// <summary>
-    /// Holds all properties and functions used for UI.
-    /// </summary>
-    public partial class Message {
-        public HorizontalAlignment MessageAlignment {
-            get {
-                if (Role == "system") return HorizontalAlignment.Center;
-                return Role == "assistant" ? HorizontalAlignment.Left : HorizontalAlignment.Right;
-            }
-        }
-
-        public Thickness MessageMargin {
-            get {
-                if (Role == "system") return new Thickness(60, 15, 60, 15);
-                return Role == "assistant" ? new Thickness(0, 20, 50, 20) : new Thickness(50, 20, 0, 20);
-            }
-        }
-
-        public Visibility ThoughtsVisible => Thoughts.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility ToolCallVisible => ToolCall.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility ToolCallResultVisible => ToolCallResult.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility MainContentVisible => MainContent.Trim('\n') != "" ? Visibility.Visible : Visibility.Collapsed;
-
-        public string ToolCall => ToolCalls != null ? ToolCalls!.Select(o => $"{o.ToolCallArguments.Name} : {o.ToolCallArguments.Arguments}").Aggregate((s, s1) => $"{s}  \n{s1}") : "";
-        public string ToolCallResult => ToolCallId != null ? Content! : "";
-
-        public string Thoughts => Content == null ? "" : Content.GetTag("think");
-        public string MainContent => Content == null || ToolCallId != null ? "" : Content.RemoveTag("think", out _).RemoveTag("tool", out _);
-
-        [SetsRequiredMembers]
-        public Message() {
-            Role = "";
-        }
-
-        public Message WithoutThinkSection() {
-            Message clone = Clone();
-            clone.Content = clone.Content.RemoveTag("think", out _);
-
-            return clone;
-        }
-    }
+    
 }

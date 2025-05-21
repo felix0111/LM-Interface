@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using LMInterface.Serializables;
 using Newtonsoft.Json;
 
 namespace LMInterface.Services {
@@ -38,7 +39,7 @@ namespace LMInterface.Services {
         /// <summary>
         /// New message are not automatically added to the conversation!
         /// </summary>
-        public async IAsyncEnumerable<Message> WaitForResponse(bool think, bool allowTools) {
+        public async IAsyncEnumerable<ApiMessage> WaitForResponse(bool think, bool allowTools) {
             //get chat completion for current conversation
             var conv = GetConversation() ?? throw new Exception("Could not find conversation!");
             var response = await LMStudioInterface.ChatCompletion(conv, think, allowTools).ConfigureAwait(false);
@@ -69,7 +70,7 @@ namespace LMInterface.Services {
         [JsonProperty("model_id")] public required string ModelId { get; set; }
         [JsonProperty("max_tokens")] public long MaxTokens { get; set; }
         [JsonProperty("no_reasoning_token")] public required string NoReasoningToken { get; set; }
-        [JsonProperty("messages")] public required ObservableCollection<Message> Messages { get; set; }
+        [JsonProperty("messages")] public required ObservableCollection<ApiMessage> Messages { get; set; }
 
         [SetsRequiredMembers]
         public Conversation() {
@@ -79,12 +80,12 @@ namespace LMInterface.Services {
             Messages = new ();
         }
 
-        public void AddMessage(Message msg) {
+        public void AddMessage(ApiMessage msg) {
             Messages.Add(msg);
         }
 
-        public Message SetSystemMessage(string message, out bool createdNew) {
-            var newMsg = new Message() { Role = "system", Content = message };
+        public ApiMessage SetSystemMessage(string message, out bool createdNew) {
+            var newMsg = new ApiMessage() { Role = "system", Content = message };
 
             //if no system message exists, create new one
             if (Messages.Count == 0 || Messages[0].Role != "system") {
@@ -98,7 +99,7 @@ namespace LMInterface.Services {
             return Messages[0];
         }
 
-        public Message? GetSystemMessage() {
+        public ApiMessage? GetSystemMessage() {
             if (Messages.Count == 0 || Messages[0].Role != "system") return null;
 
             return Messages[0];
