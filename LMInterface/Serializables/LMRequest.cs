@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using LMInterface.Serializables;
 using Newtonsoft.Json;
 
-namespace LMInterface
+namespace LMInterface.Serializables
 {
     public class LMRequest {
         [JsonProperty("model")] public required string Model { get; set; }

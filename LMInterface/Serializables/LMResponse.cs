@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using LMInterface.Serializables;
 using Newtonsoft.Json;
 
-namespace LMInterface
+namespace LMInterface.Serializables
 {
     public class LMResponse {
         [JsonProperty("id")] public required string Id { get; set; }

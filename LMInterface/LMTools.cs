@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using LMInterface.Serializables;
 using Newtonsoft.Json;
 
 namespace LMInterface {
