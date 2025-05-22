@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using CommunityToolkit.WinUI.UI;
@@ -208,7 +209,7 @@ namespace LMInterface
 
             //scroll when expander enlarges
             expander.SizeChanged += (o, args) => {
-                if(expander.IsExpanded) _currentTab!.Content.As<ListView>().SmoothScrollIntoViewWithItemAsync(expander.DataContext);
+                if(expander.IsExpanded && args.PreviousSize != new Size(0, 0)) _currentTab!.Content.As<ListView>().SmoothScrollIntoViewWithItemAsync(expander.DataContext);
             };
         }
 
